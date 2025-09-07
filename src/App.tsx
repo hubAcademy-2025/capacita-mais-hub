@@ -5,9 +5,17 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { AdminDashboard } from "@/pages/admin/AdminDashboard";
+import { AdminTurmasPage } from "@/pages/admin/AdminTurmasPage";
+import { AdminTrilhasPage } from "@/pages/admin/AdminTrilhasPage";
+import { AdminUsuariosPage } from "@/pages/admin/AdminUsuariosPage";
+import { AdminRelatoriosPage } from "@/pages/admin/AdminRelatoriosPage";
 import { ProfessorDashboard } from "@/pages/professor/ProfessorDashboard";
+import { ProfessorTurmasPage } from "@/pages/professor/ProfessorTurmasPage";
+import { ProfessorEncontrosPage } from "@/pages/professor/ProfessorEncontrosPage";
+import { ProfessorAnalyticsPage } from "@/pages/professor/ProfessorAnalyticsPage";
 import { AlunoDashboard } from "@/pages/aluno/AlunoDashboard";
 import { ClassroomPage } from "@/pages/aluno/ClassroomPage";
+import { AlunoTrilhaPage } from "@/pages/aluno/AlunoTrilhaPage";
 import { AlunoEncontrosPage } from "@/pages/aluno/AlunoEncontrosPage";
 import { AlunoProgressoPage } from "@/pages/aluno/AlunoProgressoPage";
 import { ProfessorClassPage } from "@/pages/professor/ProfessorClassPage";
@@ -43,18 +51,26 @@ const App = () => (
           {/* Admin Routes */}
           <Route path="/admin" element={<Layout title="Dashboard Administrativo" />}>
             <Route index element={<AdminDashboard />} />
+            <Route path="turmas" element={<AdminTurmasPage />} />
+            <Route path="trilhas" element={<AdminTrilhasPage />} />
+            <Route path="usuarios" element={<AdminUsuariosPage />} />
+            <Route path="relatorios" element={<AdminRelatoriosPage />} />
           </Route>
           
           {/* Professor Routes */}
           <Route path="/professor" element={<Layout title="Dashboard do Professor" />}>
             <Route index element={<ProfessorDashboard />} />
+            <Route path="turmas" element={<ProfessorTurmasPage />} />
             <Route path="turma/:classId" element={<ProfessorClassPage />} />
+            <Route path="encontros" element={<ProfessorEncontrosPage />} />
+            <Route path="analytics" element={<ProfessorAnalyticsPage />} />
           </Route>
           
           {/* Aluno Routes */}
           <Route path="/aluno" element={<Layout title="Meu Aprendizado" />}>
             <Route index element={<AlunoDashboard />} />
             <Route path="turma/:classId" element={<ClassroomPage />} />
+            <Route path="trilha" element={<AlunoTrilhaPage />} />
             <Route path="encontros" element={<AlunoEncontrosPage />} />
             <Route path="progresso" element={<AlunoProgressoPage />} />
           </Route>
