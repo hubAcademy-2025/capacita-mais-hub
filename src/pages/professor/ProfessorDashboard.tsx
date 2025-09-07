@@ -19,7 +19,11 @@ export const ProfessorDashboard = () => {
   
   if (!currentUser) return null;
 
-  const myClasses = classes.filter(c => c.professorId === currentUser.id);
+  const myClasses = classes.filter(c => 
+    (c.professorIds && c.professorIds.includes(currentUser.id)) || 
+    // @ts-ignore - backward compatibility
+    c.professorId === currentUser.id
+  );
   const totalStudents = myClasses.reduce((acc, c) => acc + c.studentIds.length, 0);
   
   const upcomingMeetings = myClasses.flatMap(c => 
@@ -70,7 +74,11 @@ export const ProfessorDashboard = () => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {myClasses.map((classItem) => {
-              const trail = trails.find(t => t.id === classItem.trailId);
+          const trail = trails.find(t => 
+            classItem.trailIds?.includes(t.id) || 
+            // @ts-ignore - backward compatibility
+            classItem.trailId === t.id
+          );
               const avgProgress = calculateAvgProgress(classItem.id);
               
               return (

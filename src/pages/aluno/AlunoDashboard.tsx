@@ -19,8 +19,16 @@ export const AlunoDashboard = () => {
   
   const enrollment = currentUser ? getStudentEnrollment(currentUser.id) : null;
   const myClass = enrollment ? classes.find(c => c.id === enrollment.classId) : null;
-  const myTrail = myClass ? trails.find(t => t.id === myClass.trailId) : null;
-  const professor = myClass ? users.find(u => u.id === myClass.professorId) : null;
+  const myTrail = myClass ? trails.find(t => 
+    myClass.trailIds?.includes(t.id) || 
+    // @ts-ignore - backward compatibility
+    myClass.trailId === t.id
+  ) : null;
+  const professor = myClass ? users.find(u => 
+    myClass.professorIds?.includes(u.id) || 
+    // @ts-ignore - backward compatibility
+    myClass.professorId === u.id
+  ) : null;
   
   const upcomingMeetings = myClass ? 
     meetings.filter(m => 

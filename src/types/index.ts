@@ -88,11 +88,14 @@ export interface UserPoints {
 export interface Class {
   id: string;
   name: string;
-  professorId: string;
-  trailId: string;
+  professorIds: string[];
+  trailIds: string[];
   studentIds: string[];
   createdAt: string;
   status: 'active' | 'completed' | 'paused';
+  // Backward compatibility
+  professorId?: string;
+  trailId?: string;
 }
 
 export interface Enrollment {

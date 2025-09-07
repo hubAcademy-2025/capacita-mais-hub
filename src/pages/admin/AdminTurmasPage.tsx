@@ -1,18 +1,25 @@
 import { Building, Users, BookOpen, BarChart3 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { StatsCard } from '@/components/ui/stats-card';
 import { useAppStore } from '@/store/useAppStore';
+import { useNavigate } from 'react-router-dom';
 import { CreateClassDialog } from '@/components/admin/CreateClassDialog';
 import { ManageClassDialog } from '@/components/admin/ManageClassDialog';
 
 export const AdminTurmasPage = () => {
   const { classes, users, trails } = useAppStore();
+  const navigate = useNavigate();
 
   const getClassStats = () => {
     const activeClasses = classes.filter(c => c.status === 'active').length;
     const totalStudents = classes.reduce((acc, c) => acc + c.studentIds.length, 0);
-    const totalProfessors = new Set(classes.map(c => c.professorId)).size;
+    // Update to handle multiple professors per class
+    const allProfessorIds = classes.flatMap(c => c.professorIds || 
+      // @ts-ignore - backward compatibility
+      [c.professorId]).filter(Boolean);
+    const totalProfessors = new Set(allProfessorIds).size;
     
     return { activeClasses, totalStudents, totalProfessors };
   };
@@ -61,8 +68,16 @@ export const AdminTurmasPage = () => {
         <CardContent>
           <div className="space-y-4">
             {classes.map((classroom) => {
-              const professor = users.find(u => u.id === classroom.professorId);
-              const trail = trails.find(t => t.id === classroom.trailId);
+              // Handle both old and new data structure
+              const professorIds = classroom.professorIds || 
+                // @ts-ignore - backward compatibility
+                [classroom.professorId].filter(Boolean);
+              const trailIds = classroom.trailIds || 
+                // @ts-ignore - backward compatibility
+                [classroom.trailId].filter(Boolean);
+              
+              const professors = users.filter(u => professorIds.includes(u.id));
+              const classTrails = trails.filter(t => trailIds.includes(t.id));
               
               return (
                 <div key={classroom.id} className="flex items-center justify-between p-4 border rounded-lg">
@@ -72,8 +87,12 @@ export const AdminTurmasPage = () => {
                     </div>
                     <div>
                       <h3 className="font-medium">{classroom.name}</h3>
-                      <p className="text-sm text-muted-foreground">Professor: {professor?.name}</p>
-                      <p className="text-sm text-muted-foreground">Trilha: {trail?.title}</p>
+                      <p className="text-sm text-muted-foreground">
+                        Professores: {professors.length > 0 ? professors.map(p => p.name).join(', ') : 'Nenhum professor'}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Trilhas: {classTrails.length > 0 ? `${classTrails.length} trilha(s)` : 'Nenhuma trilha'}
+                      </p>
                       <p className="text-xs text-muted-foreground">
                         Criada em: {new Date(classroom.createdAt).toLocaleDateString('pt-BR')}
                       </p>
@@ -86,7 +105,16 @@ export const AdminTurmasPage = () => {
                         {classroom.status === 'active' ? 'Ativa' : 'Inativa'}
                       </Badge>
                     </div>
-                    <ManageClassDialog classroom={classroom} />
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate(`/admin/turmas/${classroom.id}`)}
+                      >
+                        Ver Detalhes
+                      </Button>
+                      <ManageClassDialog classroom={classroom} />
+                    </div>
                   </div>
                 </div>
               );

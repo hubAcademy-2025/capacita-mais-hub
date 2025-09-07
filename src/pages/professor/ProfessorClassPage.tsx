@@ -49,7 +49,10 @@ export const ProfessorClassPage = () => {
   const classMeetings = meetings.filter(m => m.classId === classId);
   const trail = classroom ? trails.find(t => t.id === classroom.trailId) : null;
 
-  if (!classroom || classroom.professorId !== currentUser?.id) {
+  if (!classroom || 
+      !(classroom.professorIds?.includes(currentUser?.id || '') || 
+        // @ts-ignore - backward compatibility
+        classroom.professorId === currentUser?.id)) {
     return (
       <div className="p-6">
         <Card>

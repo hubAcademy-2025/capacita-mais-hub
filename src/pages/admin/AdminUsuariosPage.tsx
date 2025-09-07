@@ -21,7 +21,11 @@ export const AdminUsuariosPage = () => {
 
   const getUserClassInfo = (user: any) => {
     if (user.role === 'professor') {
-      const professorClasses = classes.filter(c => c.professorId === user.id);
+      const professorClasses = classes.filter(c => 
+        c.professorIds?.includes(user.id) || 
+        // @ts-ignore - backward compatibility
+        c.professorId === user.id
+      );
       return `${professorClasses.length} turmas`;
     } else if (user.role === 'aluno') {
       const studentEnrollments = enrollments.filter(e => e.studentId === user.id);

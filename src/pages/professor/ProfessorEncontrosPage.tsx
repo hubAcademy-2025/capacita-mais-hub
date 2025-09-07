@@ -9,7 +9,11 @@ export const ProfessorEncontrosPage = () => {
 
   if (!currentUser) return null;
 
-  const professorClasses = classes.filter(c => c.professorId === currentUser.id);
+  const professorClasses = classes.filter(c => 
+    (c.professorIds && c.professorIds.includes(currentUser.id)) || 
+    // @ts-ignore - backward compatibility
+    c.professorId === currentUser.id
+  );
   const professorMeetings = meetings.filter(m => 
     professorClasses.some(c => c.id === m.classId)
   ).sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime());

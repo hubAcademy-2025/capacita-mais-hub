@@ -28,7 +28,11 @@ export const PerfilPage = () => {
         badges: earnedBadges.length
       };
     } else if (currentRole === 'professor') {
-      const professorClasses = classes.filter(c => c.professorId === currentUser.id);
+      const professorClasses = classes.filter(c => 
+        c.professorIds?.includes(currentUser.id) || 
+        // @ts-ignore - backward compatibility
+        c.professorId === currentUser.id
+      );
       const totalStudents = professorClasses.reduce((acc, c) => acc + c.studentIds.length, 0);
       
       return {

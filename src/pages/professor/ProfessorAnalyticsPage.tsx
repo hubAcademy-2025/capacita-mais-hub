@@ -9,7 +9,11 @@ export const ProfessorAnalyticsPage = () => {
 
   if (!currentUser) return null;
 
-  const professorClasses = classes.filter(c => c.professorId === currentUser.id);
+  const professorClasses = classes.filter(c => 
+    (c.professorIds && c.professorIds.includes(currentUser.id)) || 
+    // @ts-ignore - backward compatibility
+    c.professorId === currentUser.id
+  );
   
   const getAnalyticsData = () => {
     const totalStudents = professorClasses.reduce((acc, c) => acc + c.studentIds.length, 0);
@@ -34,7 +38,11 @@ export const ProfessorAnalyticsPage = () => {
         ? Math.round(classEnrollments.reduce((acc, e) => acc + e.progress, 0) / classEnrollments.length)
         : 0;
       
-      const trail = trails.find(t => t.id === classroom.trailId);
+        const trail = trails.find(t => 
+          classroom.trailIds?.includes(t.id) || 
+          // @ts-ignore - backward compatibility
+          classroom.trailId === t.id
+        );
       const classMeetings = meetings.filter(m => m.classId === classroom.id);
       
       // Calculate content engagement

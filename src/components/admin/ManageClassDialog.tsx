@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings, Users, Trash2 } from 'lucide-react';
+import { Settings, Users, Trash2, Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -11,7 +11,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAppStore } from '@/store/useAppStore';
 import { Class } from '@/types';
 
@@ -20,20 +20,69 @@ interface ManageClassDialogProps {
 }
 
 export const ManageClassDialog = ({ classroom }: ManageClassDialogProps) => {
-  const { users, updateClass, deleteClass } = useAppStore();
+  const { users, trails, updateClass, deleteClass } = useAppStore();
   const [open, setOpen] = useState(false);
+  
+  // Handle both old and new data structure
+  const professorIds = classroom.professorIds || 
+    // @ts-ignore - backward compatibility
+    [classroom.professorId].filter(Boolean);
+  const trailIds = classroom.trailIds || 
+    // @ts-ignore - backward compatibility
+    [classroom.trailId].filter(Boolean);
+  
   const [formData, setFormData] = useState({
     name: classroom.name,
     status: classroom.status,
+    professorIds: professorIds,
+    trailIds: trailIds,
   });
 
-  const professor = users.find(u => u.id === classroom.professorId);
+  const professors = users.filter(u => formData.professorIds.includes(u.id));
   const students = users.filter(u => classroom.studentIds.includes(u.id));
+  const availableProfessors = users.filter(u => u.role === 'professor');
+  const classTrails = trails.filter(t => formData.trailIds.includes(t.id));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    updateClass(classroom.id, formData);
+    updateClass(classroom.id, {
+      ...formData,
+      professorIds: formData.professorIds,
+      trailIds: formData.trailIds,
+    });
     setOpen(false);
+  };
+
+  const addProfessor = (professorId: string) => {
+    if (!formData.professorIds.includes(professorId)) {
+      setFormData({
+        ...formData,
+        professorIds: [...formData.professorIds, professorId]
+      });
+    }
+  };
+
+  const removeProfessor = (professorId: string) => {
+    setFormData({
+      ...formData,
+      professorIds: formData.professorIds.filter(id => id !== professorId)
+    });
+  };
+
+  const addTrail = (trailId: string) => {
+    if (!formData.trailIds.includes(trailId)) {
+      setFormData({
+        ...formData,
+        trailIds: [...formData.trailIds, trailId]
+      });
+    }
+  };
+
+  const removeTrail = (trailId: string) => {
+    setFormData({
+      ...formData,
+      trailIds: formData.trailIds.filter(id => id !== trailId)
+    });
   };
 
   const handleDelete = () => {
@@ -51,7 +100,7 @@ export const ManageClassDialog = ({ classroom }: ManageClassDialogProps) => {
           Gerenciar
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Gerenciar Turma - {classroom.name}</DialogTitle>
         </DialogHeader>
@@ -65,14 +114,6 @@ export const ManageClassDialog = ({ classroom }: ManageClassDialogProps) => {
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             />
           </div>
-          
-
-          <div>
-            <Label>Professor Responsável</Label>
-            <div className="p-2 border rounded-md bg-muted">
-              {professor?.name || 'Professor não encontrado'}
-            </div>
-          </div>
 
           <div>
             <Label>Status</Label>
@@ -85,6 +126,95 @@ export const ManageClassDialog = ({ classroom }: ManageClassDialogProps) => {
               <option value="completed">Completa</option>
               <option value="paused">Pausada</option>
             </select>
+          </div>
+
+          {/* Multiple Professors */}
+          <div>
+            <Label>Professores Responsáveis</Label>
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <Select onValueChange={addProfessor}>
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="Adicionar professor" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableProfessors
+                      .filter(p => !formData.professorIds.includes(p.id))
+                      .map((professor) => (
+                        <SelectItem key={professor.id} value={professor.id}>
+                          {professor.name}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                {professors.map((professor) => (
+                  <div key={professor.id} className="flex items-center justify-between p-2 border rounded-md">
+                    <div className="flex items-center gap-2">
+                      <Users className="w-4 h-4" />
+                      <span className="text-sm">{professor.name}</span>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeProfessor(professor.id)}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+                {professors.length === 0 && (
+                  <p className="text-sm text-muted-foreground">Nenhum professor atribuído</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Multiple Trails */}
+          <div>
+            <Label>Trilhas da Turma</Label>
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <Select onValueChange={addTrail}>
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="Adicionar trilha" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {trails
+                      .filter(t => !formData.trailIds.includes(t.id))
+                      .map((trail) => (
+                        <SelectItem key={trail.id} value={trail.id}>
+                          {trail.title}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                {classTrails.map((trail) => (
+                  <div key={trail.id} className="flex items-center justify-between p-2 border rounded-md">
+                    <div className="flex items-center gap-2">
+                      <Users className="w-4 h-4" />
+                      <span className="text-sm">{trail.title}</span>
+                      <Badge variant="outline" className="text-xs">{trail.level}</Badge>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeTrail(trail.id)}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+                {classTrails.length === 0 && (
+                  <p className="text-sm text-muted-foreground">Nenhuma trilha atribuída</p>
+                )}
+              </div>
+            </div>
           </div>
 
           <div>

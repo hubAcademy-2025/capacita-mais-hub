@@ -26,7 +26,11 @@ export const AlunoEncontrosPage = () => {
 
   const getClassInfo = (classId: string) => {
     const classroom = studentClasses.find(c => c.id === classId);
-    const professor = classroom ? users.find(u => u.id === classroom.professorId) : null;
+    const professor = classroom ? users.find(u => 
+      classroom.professorIds?.includes(u.id) || 
+      // @ts-ignore - backward compatibility
+      classroom.professorId === u.id
+    ) : null;
     return { classroom, professor };
   };
 

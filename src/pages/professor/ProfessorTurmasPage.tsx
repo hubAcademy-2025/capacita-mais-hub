@@ -11,7 +11,11 @@ export const ProfessorTurmasPage = () => {
 
   if (!currentUser) return null;
 
-  const professorClasses = classes.filter(c => c.professorId === currentUser.id);
+  const professorClasses = classes.filter(c => 
+    (c.professorIds && c.professorIds.includes(currentUser.id)) || 
+    // @ts-ignore - backward compatibility
+    c.professorId === currentUser.id
+  );
 
   const calculateAvgProgress = (classId: string) => {
     const classEnrollments = enrollments.filter(e => e.classId === classId);

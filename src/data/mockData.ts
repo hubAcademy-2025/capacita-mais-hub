@@ -156,8 +156,8 @@ export const classes: Class[] = [
   {
     id: '1',
     name: 'Turma React Avançado 2024',
-    professorId: '2',
-    trailId: '1',
+    professorIds: ['2'],
+    trailIds: ['1'],
     studentIds: ['4', '5', '6'],
     createdAt: '2024-01-15',
     status: 'active'
@@ -165,8 +165,8 @@ export const classes: Class[] = [
   {
     id: '2',
     name: 'Liderança para Gestores',
-    professorId: '3',
-    trailId: '2',
+    professorIds: ['3'],
+    trailIds: ['2'],
     studentIds: ['7'],
     createdAt: '2024-02-01',
     status: 'active'

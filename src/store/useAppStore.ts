@@ -143,7 +143,11 @@ export const useAppStore = create<AppState>((set, get) => ({
   
   // Computed values
   getClassesByProfessor: (professorId) => {
-    return get().classes.filter(c => c.professorId === professorId);
+    return get().classes.filter(c => 
+      (c.professorIds && c.professorIds.includes(professorId)) || 
+      // @ts-ignore - backward compatibility
+      c.professorId === professorId
+    );
   },
   
   getStudentEnrollment: (studentId) => {

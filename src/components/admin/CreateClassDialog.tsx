@@ -38,9 +38,8 @@ export const CreateClassDialog = () => {
     const newClass = {
       id: `class_${Date.now()}`,
       name: formData.name,
-      description: formData.description,
-      professorId: formData.professorId,
-      trailId: formData.trailId,
+      professorIds: [formData.professorId],
+      trailIds: [formData.trailId],
       studentIds: [],
       status: 'active' as const,
       createdAt: new Date().toISOString(),

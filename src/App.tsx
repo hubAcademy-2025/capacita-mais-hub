@@ -6,9 +6,10 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { AdminDashboard } from "@/pages/admin/AdminDashboard";
 import { AdminTurmasPage } from "@/pages/admin/AdminTurmasPage";
-import { AdminTrilhasPage } from "@/pages/admin/AdminTrilhasPage";
-import { AdminUsuariosPage } from "@/pages/admin/AdminUsuariosPage";
-import { AdminRelatoriosPage } from "@/pages/admin/AdminRelatoriosPage";
+import { AdminTrilhasPage } from "./pages/admin/AdminTrilhasPage";
+import { AdminUsuariosPage } from "./pages/admin/AdminUsuariosPage";
+import { AdminRelatoriosPage } from "./pages/admin/AdminRelatoriosPage";
+import { AdminClassDetailPage } from "./pages/admin/AdminClassDetailPage";
 import { ProfessorDashboard } from "@/pages/professor/ProfessorDashboard";
 import { ProfessorTurmasPage } from "@/pages/professor/ProfessorTurmasPage";
 import { ProfessorEncontrosPage } from "@/pages/professor/ProfessorEncontrosPage";
@@ -56,6 +57,7 @@ const App = () => (
           <Route path="/admin" element={<Layout title="Dashboard Administrativo" />}>
             <Route index element={<AdminDashboard />} />
             <Route path="turmas" element={<AdminTurmasPage />} />
+            <Route path="turmas/:classId" element={<AdminClassDetailPage />} />
             <Route path="trilhas" element={<AdminTrilhasPage />} />
             <Route path="usuarios" element={<AdminUsuariosPage />} />
             <Route path="relatorios" element={<AdminRelatoriosPage />} />
