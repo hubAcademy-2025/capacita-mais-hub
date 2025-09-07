@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Bell, User, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,13 +11,18 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useAppStore } from '@/store/useAppStore';
 import { users } from '@/data/mockData';
+import { NotificationPanel } from './NotificationPanel';
 
 interface HeaderProps {
   title: string;
 }
 
 export const Header = ({ title }: HeaderProps) => {
-  const { currentUser, currentRole, setCurrentUser } = useAppStore();
+  const { currentUser, currentRole, setCurrentUser, notifications } = useAppStore();
+  const [showNotifications, setShowNotifications] = useState(false);
+  
+  const userNotifications = notifications.filter(n => n.userId === currentUser?.id);
+  const unreadCount = userNotifications.filter(n => !n.isRead).length;
 
   const handleRoleChange = (role: 'admin' | 'professor' | 'aluno') => {
     const user = users.find(u => u.role === role);
@@ -50,15 +56,29 @@ export const Header = ({ title }: HeaderProps) => {
 
         <div className="flex items-center gap-4">
           {/* Notifications */}
-          <Button variant="ghost" size="sm" className="relative">
-            <Bell className="w-5 h-5" />
-            <Badge 
-              variant="destructive" 
-              className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center p-0 text-xs"
+          <div className="relative">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="relative"
             >
-              3
-            </Badge>
-          </Button>
+              <Bell className="w-5 h-5" />
+              {unreadCount > 0 && (
+                <Badge
+                  variant="destructive"
+                  className="absolute -top-1 -right-1 h-5 min-w-5 text-xs p-0 flex items-center justify-center"
+                >
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </Badge>
+              )}
+            </Button>
+            
+            <NotificationPanel
+              isOpen={showNotifications}
+              onClose={() => setShowNotifications(false)}
+            />
+          </div>
 
           {/* Role Switcher (for demo) */}
           <DropdownMenu>

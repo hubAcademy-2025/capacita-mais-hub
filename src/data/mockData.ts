@@ -1,4 +1,4 @@
-import { User, Trail, Class, Enrollment, Meeting, Notification } from '@/types';
+import { User, Trail, Class, Enrollment, Meeting, Notification, Certificate, Badge, UserProgress, CommunityPost, UserPoints } from '@/types';
 
 export const users: User[] = [
   {
@@ -52,6 +52,10 @@ export const trails: Trail[] = [
     description: 'Aprenda React, TypeScript e as melhores práticas de desenvolvimento web.',
     duration: '40 horas',
     level: 'Intermediário',
+    certificateConfig: {
+      enabled: true,
+      type: 'trail'
+    },
     modules: [
       {
         id: '1',
@@ -64,20 +68,23 @@ export const trails: Trail[] = [
             title: 'Introdução ao React',
             type: 'video',
             duration: '45 min',
-            description: 'Conceitos fundamentais do React'
+            description: 'Conceitos fundamentais do React',
+            order: 1
           },
           {
             id: '2',
             title: 'Components e Props',
             type: 'video',
             duration: '60 min',
-            description: 'Como criar e usar componentes'
+            description: 'Como criar e usar componentes',
+            order: 2
           },
           {
             id: '3',
             title: 'Quiz: Conceitos Básicos',
             type: 'quiz',
-            description: 'Teste seus conhecimentos'
+            description: 'Teste seus conhecimentos',
+            order: 3
           }
         ]
       },
@@ -92,14 +99,16 @@ export const trails: Trail[] = [
             title: 'Tipos Básicos',
             type: 'video',
             duration: '50 min',
-            description: 'string, number, boolean e mais'
+            description: 'string, number, boolean e mais',
+            order: 1
           },
           {
             id: '5',
             title: 'Interfaces e Types',
             type: 'video',
             duration: '40 min',
-            description: 'Estruturas de dados tipadas'
+            description: 'Estruturas de dados tipadas',
+            order: 2
           }
         ]
       }
@@ -111,6 +120,10 @@ export const trails: Trail[] = [
     description: 'Desenvolva habilidades de liderança e gestão de pessoas.',
     duration: '30 horas',
     level: 'Intermediário',
+    certificateConfig: {
+      enabled: true,
+      type: 'module'
+    },
     modules: [
       {
         id: '3',
@@ -123,13 +136,15 @@ export const trails: Trail[] = [
             title: 'O que é Liderança?',
             type: 'video',
             duration: '35 min',
-            description: 'Conceitos e estilos de liderança'
+            description: 'Conceitos e estilos de liderança',
+            order: 1
           },
           {
             id: '7',
             title: 'Comunicação Assertiva',
             type: 'pdf',
-            description: 'Material de apoio sobre comunicação'
+            description: 'Material de apoio sobre comunicação',
+            order: 2
           }
         ]
       }
@@ -247,5 +262,138 @@ export const notifications: Notification[] = [
     type: 'info',
     isRead: true,
     createdAt: '2024-03-08T11:20:00'
+  },
+  {
+    id: '4',
+    userId: '4',
+    title: 'Badge conquistada!',
+    message: 'Parabéns! Você conquistou a badge "Primeiro Vídeo"',
+    type: 'success',
+    isRead: false,
+    createdAt: '2024-03-12T10:30:00'
+  }
+];
+
+export const badges: Badge[] = [
+  {
+    id: '1',
+    name: 'Primeiro Vídeo',
+    description: 'Assistiu seu primeiro vídeo',
+    icon: '🎬',
+    points: 10
+  },
+  {
+    id: '2',
+    name: 'Quiz Master',
+    description: 'Completou 5 quizzes com nota máxima',
+    icon: '🧠',
+    points: 50
+  },
+  {
+    id: '3',
+    name: 'Trilha Completa',
+    description: 'Completou uma trilha inteira',
+    icon: '🏆',
+    points: 100
+  },
+  {
+    id: '4',
+    name: 'Participativo',
+    description: 'Fez 10 posts na comunidade',
+    icon: '💬',
+    points: 25
+  }
+];
+
+export const userProgress: UserProgress[] = [
+  {
+    userId: '4',
+    contentId: '1',
+    completed: true,
+    percentage: 100,
+    lastAccessed: '2024-03-10T14:30:00'
+  },
+  {
+    userId: '4',
+    contentId: '2',
+    completed: true,
+    percentage: 100,
+    lastAccessed: '2024-03-11T10:15:00'
+  },
+  {
+    userId: '4',
+    contentId: '3',
+    completed: false,
+    percentage: 0,
+    lastAccessed: '2024-03-11T11:00:00'
+  },
+  {
+    userId: '5',
+    contentId: '1',
+    completed: true,
+    percentage: 100,
+    lastAccessed: '2024-03-09T16:20:00'
+  },
+  {
+    userId: '5',
+    contentId: '2',
+    completed: true,
+    percentage: 100,
+    lastAccessed: '2024-03-10T09:45:00'
+  }
+];
+
+export const communityPosts: CommunityPost[] = [
+  {
+    id: '1',
+    classId: '1',
+    authorId: '4',
+    content: 'Pessoal, alguém pode me ajudar com o useEffect? Não estou entendendo muito bem quando ele executa.',
+    createdAt: '2024-03-12T14:30:00',
+    likes: ['5']
+  },
+  {
+    id: '2',
+    classId: '1',
+    authorId: '2',
+    content: 'O useEffect executa após o render do componente. Vou preparar um exemplo prático para a próxima aula!',
+    createdAt: '2024-03-12T15:00:00',
+    parentId: '1',
+    likes: ['4', '5', '6']
+  },
+  {
+    id: '3',
+    classId: '1',
+    authorId: '5',
+    content: 'Acabei de terminar o módulo de TypeScript. Muito útil para evitar bugs!',
+    createdAt: '2024-03-13T09:15:00',
+    likes: ['4', '6']
+  }
+];
+
+export const userPoints: UserPoints[] = [
+  {
+    userId: '4',
+    totalPoints: 45,
+    badges: ['1'],
+    achievements: ['first_video', 'first_quiz']
+  },
+  {
+    userId: '5',
+    totalPoints: 120,
+    badges: ['1', '2'],
+    achievements: ['first_video', 'first_quiz', 'quiz_master']
+  },
+  {
+    userId: '6',
+    totalPoints: 25,
+    badges: ['1'],
+    achievements: ['first_video']
+  },
+  {
+    userId: '7',
+    totalPoints: 15,
+    badges: ['1'],
+    achievements: ['first_video']
   }
 ];

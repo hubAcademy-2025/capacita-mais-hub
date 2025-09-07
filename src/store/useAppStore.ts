@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import { User, UserRole, Class, Trail, Enrollment, Meeting } from '@/types';
-import { users, classes, trails, enrollments, meetings } from '@/data/mockData';
+import { User, UserRole, Class, Trail, Enrollment, Meeting, Notification, Badge, UserProgress, CommunityPost, UserPoints } from '@/types';
+import { users, classes, trails, enrollments, meetings, notifications, badges, userProgress, communityPosts, userPoints } from '@/data/mockData';
 
 interface AppState {
   // User management
@@ -13,6 +13,11 @@ interface AppState {
   trails: Trail[];
   enrollments: Enrollment[];
   meetings: Meeting[];
+  notifications: Notification[];
+  badges: Badge[];
+  userProgress: UserProgress[];
+  communityPosts: CommunityPost[];
+  userPoints: UserPoints[];
   
   // UI State
   sidebarCollapsed: boolean;
@@ -31,6 +36,16 @@ interface AppState {
   addMeeting: (meeting: Meeting) => void;
   updateEnrollment: (studentId: string, classId: string, updates: Partial<Enrollment>) => void;
   
+  // Notifications
+  markNotificationsAsRead: (userId: string) => void;
+  addNotification: (notification: Notification) => void;
+  
+  // Community
+  addCommunityPost: (post: CommunityPost) => void;
+  
+  // Progress
+  updateUserProgress: (userId: string, contentId: string, progress: Partial<UserProgress>) => void;
+  
   // Computed values
   getClassesByProfessor: (professorId: string) => Class[];
   getStudentEnrollment: (studentId: string) => Enrollment | null;
@@ -47,6 +62,11 @@ export const useAppStore = create<AppState>((set, get) => ({
   trails,
   enrollments,
   meetings,
+  notifications,
+  badges,
+  userProgress,
+  communityPosts,
+  userPoints,
   sidebarCollapsed: false,
   
   // Actions
@@ -79,6 +99,31 @@ export const useAppStore = create<AppState>((set, get) => ({
       e.studentId === studentId && e.classId === classId 
         ? { ...e, ...updates } 
         : e
+    )
+  })),
+  
+  // Notifications
+  markNotificationsAsRead: (userId) => set((state) => ({
+    notifications: state.notifications.map(n => 
+      n.userId === userId ? { ...n, isRead: true } : n
+    )
+  })),
+  
+  addNotification: (notification) => set((state) => ({
+    notifications: [notification, ...state.notifications]
+  })),
+  
+  // Community
+  addCommunityPost: (post) => set((state) => ({
+    communityPosts: [post, ...state.communityPosts]
+  })),
+  
+  // Progress
+  updateUserProgress: (userId, contentId, progress) => set((state) => ({
+    userProgress: state.userProgress.map(p => 
+      p.userId === userId && p.contentId === contentId 
+        ? { ...p, ...progress }
+        : p
     )
   })),
   

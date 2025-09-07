@@ -15,6 +15,11 @@ export interface Trail {
   modules: Module[];
   duration: string;
   level: 'Iniciante' | 'Intermediário' | 'Avançado';
+  certificateConfig: {
+    enabled: boolean;
+    type: 'trail' | 'module' | 'both';
+  };
+  isBlocked?: boolean;
 }
 
 export interface Module {
@@ -23,6 +28,7 @@ export interface Module {
   description: string;
   content: Content[];
   order: number;
+  isBlocked?: boolean;
 }
 
 export interface Content {
@@ -32,6 +38,51 @@ export interface Content {
   url?: string;
   duration?: string;
   description?: string;
+  isBlocked?: boolean;
+  order: number;
+}
+
+export interface Certificate {
+  id: string;
+  userId: string;
+  trailId?: string;
+  moduleId?: string;
+  issuedAt: string;
+  qrCode: string;
+  type: 'trail' | 'module';
+}
+
+export interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  points: number;
+}
+
+export interface UserProgress {
+  userId: string;
+  contentId: string;
+  completed: boolean;
+  percentage: number;
+  lastAccessed: string;
+}
+
+export interface CommunityPost {
+  id: string;
+  classId: string;
+  authorId: string;
+  content: string;
+  createdAt: string;
+  parentId?: string; // for replies
+  likes: string[]; // user IDs who liked
+}
+
+export interface UserPoints {
+  userId: string;
+  totalPoints: number;
+  badges: string[]; // badge IDs
+  achievements: string[];
 }
 
 export interface Class {
