@@ -1,29 +1,40 @@
-import { Calendar, Users, BookOpen, Clock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Calendar, Users, BookOpen, Clock, BarChart3 } from 'lucide-react';
 import { StatsCard } from '@/components/ui/stats-card';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAppStore } from '@/store/useAppStore';
-import { Link } from 'react-router-dom';
 
 export const ProfessorDashboard = () => {
+  const navigate = useNavigate();
   const { 
     currentUser, 
-    getClassesByProfessor, 
+    classes,
     users, 
     trails, 
     enrollments, 
-    getClassMeetings 
+    meetings 
   } = useAppStore();
   
-  const myClasses = currentUser ? getClassesByProfessor(currentUser.id) : [];
+  if (!currentUser) return null;
+
+  const myClasses = classes.filter(c => c.professorId === currentUser.id);
   const totalStudents = myClasses.reduce((acc, c) => acc + c.studentIds.length, 0);
   
   const upcomingMeetings = myClasses.flatMap(c => 
-    getClassMeetings(c.id).filter(m => 
-      new Date(m.dateTime) > new Date() && m.status === 'scheduled'
+    meetings.filter(m => 
+      m.classId === c.id &&
+      new Date(m.dateTime) > new Date() && 
+      m.status === 'scheduled'
     )
   ).slice(0, 3);
+
+  const calculateAvgProgress = (classId: string) => {
+    const classEnrollments = enrollments.filter(e => e.classId === classId);
+    if (classEnrollments.length === 0) return 0;
+    return Math.round(classEnrollments.reduce((acc, e) => acc + e.progress, 0) / classEnrollments.length);
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -47,27 +58,20 @@ export const ProfessorDashboard = () => {
         <StatsCard
           title="Taxa de Conclusão"
           value="78%"
-          icon={Clock}
-          trend={{ value: 5, isPositive: true }}
+          icon={BarChart3}
         />
       </div>
 
       {/* My Classes */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader>
           <CardTitle>Minhas Turmas</CardTitle>
-          <Button asChild>
-            <Link to="/professor/turmas">Ver Todas</Link>
-          </Button>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {myClasses.map((classItem) => {
               const trail = trails.find(t => t.id === classItem.trailId);
-              const classEnrollments = enrollments.filter(e => e.classId === classItem.id);
-              const avgProgress = classEnrollments.length > 0 
-                ? Math.round(classEnrollments.reduce((acc, e) => acc + e.progress, 0) / classEnrollments.length)
-                : 0;
+              const avgProgress = calculateAvgProgress(classItem.id);
               
               return (
                 <Card key={classItem.id} className="hover:shadow-elevated transition-shadow cursor-pointer">
@@ -75,7 +79,9 @@ export const ProfessorDashboard = () => {
                     <div className="space-y-3">
                       <div className="flex items-start justify-between">
                         <h3 className="font-semibold text-foreground">{classItem.name}</h3>
-                        <Badge variant="secondary">{classItem.status}</Badge>
+                        <Badge variant={classItem.status === 'active' ? 'default' : 'secondary'}>
+                          {classItem.status === 'active' ? 'Ativa' : 'Inativa'}
+                        </Badge>
                       </div>
                       
                       <p className="text-sm text-muted-foreground">{trail?.title}</p>
@@ -89,10 +95,12 @@ export const ProfessorDashboard = () => {
                         </span>
                       </div>
                       
-                      <Button asChild size="sm" className="w-full">
-                        <Link to={`/professor/turmas/${classItem.id}`}>
-                          Gerenciar Turma
-                        </Link>
+                      <Button 
+                        onClick={() => navigate(`/professor/turma/${classItem.id}`)}
+                        size="sm" 
+                        className="w-full"
+                      >
+                        Gerenciar Turma
                       </Button>
                     </div>
                   </CardContent>
@@ -100,6 +108,14 @@ export const ProfessorDashboard = () => {
               );
             })}
           </div>
+          
+          {myClasses.length === 0 && (
+            <div className="text-center py-8 text-muted-foreground">
+              <BookOpen className="w-12 h-12 mx-auto mb-4" />
+              <h3 className="font-medium mb-2">Nenhuma turma atribuída</h3>
+              <p className="text-sm">Aguarde a atribuição de turmas pelo administrador.</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -133,16 +149,22 @@ export const ProfessorDashboard = () => {
                       </div>
                     </div>
                     
-                    <Button variant="outline" size="sm">
-                      Detalhes
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => navigate(`/professor/turma/${meeting.classId}`)}
+                    >
+                      Ver Turma
                     </Button>
                   </div>
                 );
               })
             ) : (
-              <p className="text-center text-muted-foreground py-8">
-                Nenhum encontro agendado
-              </p>
+              <div className="text-center py-8 text-muted-foreground">
+                <Calendar className="w-12 h-12 mx-auto mb-4" />
+                <h3 className="font-medium mb-2">Nenhum encontro agendado</h3>
+                <p className="text-sm">Agende encontros para suas turmas.</p>
+              </div>
             )}
           </div>
         </CardContent>

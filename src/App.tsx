@@ -8,6 +8,9 @@ import { AdminDashboard } from "@/pages/admin/AdminDashboard";
 import { ProfessorDashboard } from "@/pages/professor/ProfessorDashboard";
 import { AlunoDashboard } from "@/pages/aluno/AlunoDashboard";
 import { ClassroomPage } from "@/pages/aluno/ClassroomPage";
+import { AlunoEncontrosPage } from "@/pages/aluno/AlunoEncontrosPage";
+import { AlunoProgressoPage } from "@/pages/aluno/AlunoProgressoPage";
+import { ProfessorClassPage } from "@/pages/professor/ProfessorClassPage";
 import { useAppStore } from "@/store/useAppStore";
 import NotFound from "./pages/NotFound";
 
@@ -45,12 +48,15 @@ const App = () => (
           {/* Professor Routes */}
           <Route path="/professor" element={<Layout title="Dashboard do Professor" />}>
             <Route index element={<ProfessorDashboard />} />
+            <Route path="turma/:classId" element={<ProfessorClassPage />} />
           </Route>
           
           {/* Aluno Routes */}
           <Route path="/aluno" element={<Layout title="Meu Aprendizado" />}>
             <Route index element={<AlunoDashboard />} />
             <Route path="turma/:classId" element={<ClassroomPage />} />
+            <Route path="encontros" element={<AlunoEncontrosPage />} />
+            <Route path="progresso" element={<AlunoProgressoPage />} />
           </Route>
           
           {/* Catch-all route */}
