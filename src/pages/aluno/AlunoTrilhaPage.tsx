@@ -142,9 +142,13 @@ export const AlunoTrilhaPage = () => {
                     </div>
                     
                     <Button size="sm" className="w-full" onClick={() => {
-                      // Navigate to specific class trail
-                      if (classroom && classroom.id) {
-                        window.location.href = `/aluno/turma/${classroom.id}`;
+                      // Navigate to the first content in the trail
+                      if (trail && trail.modules.length > 0) {
+                        const firstModule = trail.modules[0];
+                        if (firstModule.content.length > 0) {
+                          const firstContent = firstModule.content[0];
+                          window.location.href = `/aluno/turma/${classroom.id}/trilha/${trail.id}/modulo/${firstModule.id}/conteudo/${firstContent.id}`;
+                        }
                       }
                     }}>
                       <Play className="w-4 h-4 mr-2" />

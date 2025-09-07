@@ -16,6 +16,25 @@ export const AlunoContentViewerPage = () => {
   
   const [openModules, setOpenModules] = useState<string[]>([]);
   
+  // Find the module where the user left off (has incomplete content)
+  const getUserLastModule = () => {
+    if (!currentUser || !trail) return null;
+    
+    for (const mod of trail.modules) {
+      const hasIncompleteContent = mod.content.some(cont => {
+        const progress = userProgress.find(p => 
+          p.userId === currentUser.id && p.contentId === cont.id
+        );
+        return !progress?.completed;
+      });
+      
+      if (hasIncompleteContent) {
+        return mod.id;
+      }
+    }
+    return trail.modules[0]?.id; // Default to first module
+  };
+  
   const classroom = classes.find(c => c.id === classId);
   const trail = trails.find(t => t.id === trailId);
   const module = trail?.modules.find(m => m.id === moduleId);
@@ -26,10 +45,16 @@ export const AlunoContentViewerPage = () => {
   );
 
   useEffect(() => {
-    if (moduleId && !openModules.includes(moduleId)) {
-      setOpenModules(prev => [...prev, moduleId]);
-    }
-  }, [moduleId]);
+    const userLastModule = getUserLastModule();
+    
+    // Always open the current module and the user's last module
+    const modulesToOpen = [moduleId, userLastModule].filter(Boolean) as string[];
+    
+    setOpenModules(prev => {
+      const newModules = modulesToOpen.filter(id => !prev.includes(id));
+      return [...prev, ...newModules];
+    });
+  }, [moduleId, currentUser, trail, userProgress]);
 
   if (!classroom || !trail || !module || !content) {
     return (
