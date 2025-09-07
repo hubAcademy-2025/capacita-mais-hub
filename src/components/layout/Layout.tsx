@@ -18,11 +18,9 @@ export const Layout = ({ title }: LayoutProps) => {
         <Header title={title} />
         
         <main className={`flex-1 transition-all duration-300 ease-in-out ${
-          sidebarCollapsed ? 'ml-0' : 'ml-0'
+          sidebarCollapsed ? 'ml-16' : 'ml-64'
         }`}>
-          <div className="p-6">
-            <Outlet />
-          </div>
+          <Outlet />
         </main>
       </div>
     </div>

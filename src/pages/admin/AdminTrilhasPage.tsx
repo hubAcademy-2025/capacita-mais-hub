@@ -27,7 +27,7 @@ export const AdminTrilhasPage = () => {
           <h1 className="text-3xl font-bold text-foreground">Gestão de Trilhas</h1>
           <p className="text-muted-foreground">Crie e gerencie trilhas de aprendizado</p>
         </div>
-        <Button>
+        <Button onClick={() => alert('Funcionalidade de criar trilha será implementada')}>
           <Plus className="w-4 h-4 mr-2" />
           Nova Trilha
         </Button>
@@ -119,7 +119,7 @@ export const AdminTrilhasPage = () => {
                       )}
                     </div>
 
-                    <Button variant="outline" size="sm" className="w-full">
+                    <Button variant="outline" size="sm" className="w-full" onClick={() => alert('Funcionalidade de editar trilha será implementada')}>
                       Editar Trilha
                     </Button>
                   </CardContent>

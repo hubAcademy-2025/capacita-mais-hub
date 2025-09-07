@@ -18,7 +18,11 @@ import { ClassroomPage } from "@/pages/aluno/ClassroomPage";
 import { AlunoTrilhaPage } from "@/pages/aluno/AlunoTrilhaPage";
 import { AlunoEncontrosPage } from "@/pages/aluno/AlunoEncontrosPage";
 import { AlunoProgressoPage } from "@/pages/aluno/AlunoProgressoPage";
+import { AlunoContentViewerPage } from "@/pages/aluno/AlunoContentViewerPage";
 import { ProfessorClassPage } from "@/pages/professor/ProfessorClassPage";
+import { ProfessorContentViewerPage } from "@/pages/professor/ProfessorContentViewerPage";
+import { ConfiguracoesPage } from "@/pages/ConfiguracoesPage";
+import { PerfilPage } from "@/pages/PerfilPage";
 import { useAppStore } from "@/store/useAppStore";
 import NotFound from "./pages/NotFound";
 
@@ -64,6 +68,7 @@ const App = () => (
             <Route path="turma/:classId" element={<ProfessorClassPage />} />
             <Route path="encontros" element={<ProfessorEncontrosPage />} />
             <Route path="analytics" element={<ProfessorAnalyticsPage />} />
+            <Route path="content/:trailId/:moduleId/:contentId" element={<ProfessorContentViewerPage />} />
           </Route>
           
           {/* Aluno Routes */}
@@ -74,6 +79,13 @@ const App = () => (
             <Route path="encontros" element={<AlunoEncontrosPage />} />
             <Route path="progresso" element={<AlunoProgressoPage />} />
           </Route>
+          
+          {/* Student Content Viewer (outside layout) */}
+          <Route path="/aluno/turma/:classId/trilha/:trailId/modulo/:moduleId/conteudo/:contentId" element={<AlunoContentViewerPage />} />
+          
+          {/* Global Routes */}
+          <Route path="/configuracoes" element={<ConfiguracoesPage />} />
+          <Route path="/perfil" element={<PerfilPage />} />
           
           {/* Catch-all route */}
           <Route path="*" element={<NotFound />} />

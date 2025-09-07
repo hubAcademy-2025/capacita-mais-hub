@@ -16,7 +16,7 @@ interface CommunityTabProps {
 }
 
 export const CommunityTab = ({ classId }: CommunityTabProps) => {
-  const { currentUser, communityPosts, addCommunityPost, users } = useAppStore();
+  const { currentUser, communityPosts, addCommunityPost, togglePostLike, users } = useAppStore();
   const [newPost, setNewPost] = useState('');
   const [replyTo, setReplyTo] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState('');
@@ -134,8 +134,13 @@ export const CommunityTab = ({ classId }: CommunityTabProps) => {
 
                   {/* Post Actions */}
                   <div className="flex items-center gap-4 mt-3">
-                    <Button variant="ghost" size="sm" className="text-muted-foreground">
-                      <Heart className="w-4 h-4 mr-1" />
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className={`text-muted-foreground ${post.likes.includes(currentUser?.id || '') ? 'text-red-500' : ''}`}
+                      onClick={() => currentUser && togglePostLike(post.id, currentUser.id)}
+                    >
+                      <Heart className={`w-4 h-4 mr-1 ${post.likes.includes(currentUser?.id || '') ? 'fill-current' : ''}`} />
                       {post.likes.length}
                     </Button>
                     <Button 

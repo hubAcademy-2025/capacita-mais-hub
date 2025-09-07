@@ -33,7 +33,7 @@ export const ProfessorEncontrosPage = () => {
           <h1 className="text-3xl font-bold text-foreground">Meus Encontros</h1>
           <p className="text-muted-foreground">Gerencie seus encontros e aulas ao vivo</p>
         </div>
-        <Button>
+        <Button onClick={() => alert('Funcionalidade de agendar encontro será implementada')}>
           <Plus className="w-4 h-4 mr-2" />
           Agendar Encontro
         </Button>

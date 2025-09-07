@@ -25,7 +25,7 @@ export const AdminTurmasPage = () => {
           <h1 className="text-3xl font-bold text-foreground">Gestão de Turmas</h1>
           <p className="text-muted-foreground">Gerencie todas as turmas da plataforma</p>
         </div>
-        <Button>
+        <Button onClick={() => alert('Funcionalidade de criar turma será implementada')}>
           <Plus className="w-4 h-4 mr-2" />
           Nova Turma
         </Button>
@@ -88,7 +88,7 @@ export const AdminTurmasPage = () => {
                         {classroom.status === 'active' ? 'Ativa' : 'Inativa'}
                       </Badge>
                     </div>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => alert('Funcionalidade de gerenciar turma será implementada')}>
                       Gerenciar
                     </Button>
                   </div>

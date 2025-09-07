@@ -28,6 +28,9 @@ export const Header = ({ title }: HeaderProps) => {
     const user = users.find(u => u.role === role);
     if (user) {
       setCurrentUser(user);
+      // Navigate to appropriate dashboard
+      const basePath = role === 'admin' ? '/admin' : role === 'professor' ? '/professor' : '/aluno';
+      window.location.href = basePath;
     }
   };
 
@@ -116,7 +119,7 @@ export const Header = ({ title }: HeaderProps) => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => window.location.href = '/perfil'}>
                 <User className="w-4 h-4 mr-2" />
                 Perfil
               </DropdownMenuItem>

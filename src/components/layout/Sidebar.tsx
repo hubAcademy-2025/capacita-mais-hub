@@ -18,7 +18,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { Button } from '@/components/ui/button';
 
 const adminNavItems = [
-  { icon: Home, label: 'Dashboard', path: '/' },
+  { icon: Home, label: 'Dashboard', path: '/admin' },
   { icon: Building, label: 'Turmas', path: '/admin/turmas' },
   { icon: BookOpen, label: 'Trilhas', path: '/admin/trilhas' },
   { icon: Users, label: 'Usuários', path: '/admin/usuarios' },
@@ -59,7 +59,7 @@ export const Sidebar = () => {
 
   return (
     <aside className={cn(
-      "bg-card border-r border-border transition-all duration-300 ease-in-out relative h-screen flex flex-col",
+      "bg-card border-r border-border transition-all duration-300 ease-in-out fixed left-0 top-0 h-screen flex flex-col z-40",
       sidebarCollapsed ? "w-16" : "w-64"
     )}>
       {/* Header */}

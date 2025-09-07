@@ -42,6 +42,7 @@ interface AppState {
   
   // Community
   addCommunityPost: (post: CommunityPost) => void;
+  togglePostLike: (postId: string, userId: string) => void;
   
   // Progress
   updateUserProgress: (userId: string, contentId: string, progress: Partial<UserProgress>) => void;
@@ -116,6 +117,19 @@ export const useAppStore = create<AppState>((set, get) => ({
   // Community
   addCommunityPost: (post) => set((state) => ({
     communityPosts: [post, ...state.communityPosts]
+  })),
+
+  togglePostLike: (postId, userId) => set((state) => ({
+    communityPosts: state.communityPosts.map(post => 
+      post.id === postId 
+        ? {
+            ...post,
+            likes: post.likes.includes(userId)
+              ? post.likes.filter(id => id !== userId)
+              : [...post.likes, userId]
+          }
+        : post
+    )
   })),
   
   // Progress

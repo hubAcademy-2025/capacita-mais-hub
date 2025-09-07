@@ -63,7 +63,7 @@ export const AdminUsuariosPage = () => {
           <h1 className="text-3xl font-bold text-foreground">Gestão de Usuários</h1>
           <p className="text-muted-foreground">Gerencie todos os usuários da plataforma</p>
         </div>
-        <Button>
+        <Button onClick={() => alert('Funcionalidade de criar usuário será implementada')}>
           <Plus className="w-4 h-4 mr-2" />
           Novo Usuário
         </Button>
@@ -118,7 +118,7 @@ export const AdminUsuariosPage = () => {
                       <p className="text-xs text-muted-foreground">{user.email}</p>
                     </div>
                   </div>
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" onClick={() => alert('Funcionalidade de editar usuário será implementada')}>
                     Editar
                   </Button>
                 </div>
@@ -151,7 +151,7 @@ export const AdminUsuariosPage = () => {
                       <p className="text-xs text-muted-foreground">{getUserClassInfo(user)}</p>
                     </div>
                   </div>
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" onClick={() => alert('Funcionalidade de editar usuário será implementada')}>
                     Editar
                   </Button>
                 </div>
@@ -184,7 +184,7 @@ export const AdminUsuariosPage = () => {
                       <p className="text-xs text-muted-foreground">{getUserClassInfo(user)}</p>
                     </div>
                   </div>
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" onClick={() => alert('Funcionalidade de editar usuário será implementada')}>
                     Editar
                   </Button>
                 </div>
@@ -220,7 +220,7 @@ export const AdminUsuariosPage = () => {
                     {getRoleIcon(user.role)}
                     {getRoleName(user.role)}
                   </Badge>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={() => alert('Funcionalidade de gerenciar usuário será implementada')}>
                     Gerenciar
                   </Button>
                 </div>

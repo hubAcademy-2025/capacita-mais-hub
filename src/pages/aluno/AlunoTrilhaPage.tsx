@@ -143,7 +143,9 @@ export const AlunoTrilhaPage = () => {
                     
                     <Button size="sm" className="w-full" onClick={() => {
                       // Navigate to specific class trail
-                      window.location.href = `/aluno/turma/${classroom.id}`;
+                      if (classroom && classroom.id) {
+                        window.location.href = `/aluno/turma/${classroom.id}`;
+                      }
                     }}>
                       <Play className="w-4 h-4 mr-2" />
                       Continuar
