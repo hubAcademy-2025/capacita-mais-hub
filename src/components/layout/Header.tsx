@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, User, ChevronDown } from 'lucide-react';
+import { Bell, User, ChevronDown, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAppStore } from '@/store/useAppStore';
+import { useAuth } from '@/contexts/AuthContext';
 import { users } from '@/data/mockData';
 import { NotificationPanel } from './NotificationPanel';
 
@@ -20,6 +21,7 @@ interface HeaderProps {
 
 export const Header = ({ title }: HeaderProps) => {
   const { currentUser, currentRole, setCurrentUser, notifications } = useAppStore();
+  const { signOut } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
   const navigate = useNavigate();
   
@@ -126,7 +128,8 @@ export const Header = ({ title }: HeaderProps) => {
                 Perfil
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={signOut}>
+                <LogOut className="w-4 h-4 mr-2" />
                 Sair
               </DropdownMenuItem>
             </DropdownMenuContent>

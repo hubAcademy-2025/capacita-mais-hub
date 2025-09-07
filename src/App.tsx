@@ -3,7 +3,10 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { Layout } from "@/components/layout/Layout";
+import { AuthPage } from "@/pages/AuthPage";
 import { AdminDashboard } from "@/pages/admin/AdminDashboard";
 import { AdminTurmasPage } from "@/pages/admin/AdminTurmasPage";
 import { AdminTrilhasPage } from "./pages/admin/AdminTrilhasPage";
@@ -48,15 +51,22 @@ const DashboardRedirect = () => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<DashboardRedirect />} />
-          
-          {/* Admin Routes */}
-          <Route path="/admin" element={<Layout title="Dashboard Administrativo" />}>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/auth" element={<AuthPage />} />
+            <Route path="/" element={<DashboardRedirect />} />
+            
+            {/* Protected Admin Routes */}
+            <Route path="/admin" element={
+              <ProtectedRoute>
+                <Layout title="Dashboard Administrativo" />
+              </ProtectedRoute>
+            }>
             <Route index element={<AdminDashboard />} />
             <Route path="turmas" element={<AdminTurmasPage />} />
             <Route path="turmas/:classId" element={<AdminClassDetailPage />} />
@@ -64,9 +74,13 @@ const App = () => (
             <Route path="usuarios" element={<AdminUsuariosPage />} />
             <Route path="relatorios" element={<AdminRelatoriosPage />} />
           </Route>
-          
-          {/* Professor Routes */}
-          <Route path="/professor" element={<Layout title="Dashboard do Professor" />}>
+            
+            {/* Protected Professor Routes */}
+            <Route path="/professor" element={
+              <ProtectedRoute>
+                <Layout title="Dashboard do Professor" />
+              </ProtectedRoute>
+            }>
             <Route index element={<ProfessorDashboard />} />
             <Route path="turmas" element={<ProfessorTurmasPage />} />
             <Route path="turma/:classId" element={<ProfessorClassPage />} />
@@ -75,9 +89,13 @@ const App = () => (
             <Route path="analytics" element={<ProfessorAnalyticsPage />} />
             <Route path="content/:trailId/:moduleId/:contentId" element={<ProfessorContentViewerPage />} />
           </Route>
-          
-          {/* Aluno Routes */}
-          <Route path="/aluno" element={<Layout title="Meu Aprendizado" />}>
+            
+            {/* Protected Aluno Routes */}
+            <Route path="/aluno" element={
+              <ProtectedRoute>
+                <Layout title="Meu Aprendizado" />
+              </ProtectedRoute>
+            }>
             <Route index element={<AlunoDashboard />} />
             <Route path="turma/:classId" element={<ClassroomPage />} />
             <Route path="trilha" element={<AlunoTrilhaPage />} />
@@ -85,23 +103,36 @@ const App = () => (
             <Route path="encontro/:meetingId" element={<AlunoMeetingRoomPage />} />
             <Route path="progresso" element={<AlunoProgressoPage />} />
           </Route>
-          
-          {/* Student Content Viewer (outside layout) */}
-          <Route path="/aluno/turma/:classId/trilha/:trailId/modulo/:moduleId/conteudo/:contentId" element={<AlunoContentViewerPage />} />
-          
-          {/* Global Routes */}
-          <Route path="/configuracoes" element={<Layout title="Configurações" />}>
-            <Route index element={<ConfiguracoesPage />} />
-          </Route>
-          <Route path="/perfil" element={<Layout title="Perfil" />}>
-            <Route index element={<PerfilPage />} />
-          </Route>
+            
+            {/* Protected Student Content Viewer */}
+            <Route path="/aluno/turma/:classId/trilha/:trailId/modulo/:moduleId/conteudo/:contentId" element={
+              <ProtectedRoute>
+                <AlunoContentViewerPage />
+              </ProtectedRoute>
+            } />
+            
+            {/* Protected Global Routes */}
+            <Route path="/configuracoes" element={
+              <ProtectedRoute>
+                <Layout title="Configurações" />
+              </ProtectedRoute>
+            }>
+              <Route index element={<ConfiguracoesPage />} />
+            </Route>
+            <Route path="/perfil" element={
+              <ProtectedRoute>
+                <Layout title="Perfil" />
+              </ProtectedRoute>
+            }>
+              <Route index element={<PerfilPage />} />
+            </Route>
           
           {/* Catch-all route */}
           <Route path="*" element={<NotFound />} />
         </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
