@@ -89,7 +89,9 @@ export const AlunoEncontrosPage = () => {
                     )}
                     <Button 
                       size="sm"
+                      variant={isToday ? "default" : "outline"}
                       onClick={() => navigate(`/aluno/encontro/${meeting.id}`)}
+                      className={isToday ? "bg-success hover:bg-success/90" : ""}
                     >
                       {isToday ? 'Entrar' : 'Detalhes'}
                     </Button>
@@ -147,11 +149,12 @@ export const AlunoEncontrosPage = () => {
                   <div className="flex items-center gap-2">
                     <Badge variant="secondary">Concluído</Badge>
                     <Button 
-                      variant="outline" 
+                      variant="default" 
                       size="sm"
                       onClick={() => navigate(`/aluno/encontro/${meeting.id}`)}
+                      className="bg-primary hover:bg-primary/90"
                     >
-                      Ver Gravação
+                      Entrar
                     </Button>
                   </div>
                 </div>

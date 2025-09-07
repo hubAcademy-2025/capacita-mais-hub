@@ -214,9 +214,6 @@ export const ProfessorEncontrosPage = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant="secondary">Concluído</Badge>
-                    <Button variant="outline" size="sm" disabled>
-                      Concluído
-                    </Button>
                   </div>
                 </div>
               );

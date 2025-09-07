@@ -40,7 +40,25 @@ const alunoNavItems = [
 ];
 
 export const Sidebar = () => {
-  const { currentRole, sidebarCollapsed, toggleSidebar } = useAppStore();
+  const { currentRole, sidebarCollapsed, toggleSidebar, currentUser, classes, enrollments, meetings } = useAppStore();
+  
+  // Check for live meetings for students
+  const hasLiveMeeting = () => {
+    if (currentRole !== 'aluno' || !currentUser) return false;
+    
+    const studentEnrollments = enrollments.filter(e => e.studentId === currentUser.id);
+    const studentClasses = classes.filter(c => studentEnrollments.some(e => e.classId === c.id));
+    
+    const now = new Date();
+    const liveMeetings = meetings.filter(m => {
+      if (!studentClasses.some(c => c.id === m.classId)) return false;
+      const meetingStart = new Date(m.dateTime);
+      const meetingEnd = new Date(meetingStart.getTime() + m.duration * 60000);
+      return now >= meetingStart && now <= meetingEnd && m.status === 'scheduled';
+    });
+    
+    return liveMeetings.length > 0;
+  };
   
   const getNavItems = () => {
     switch (currentRole) {
@@ -99,7 +117,7 @@ export const Sidebar = () => {
                 end
                 className={({ isActive }) =>
                   cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm font-medium",
+                    "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm font-medium relative",
                     "hover:bg-secondary hover:text-secondary-foreground",
                     isActive
                       ? "bg-primary text-primary-foreground shadow-sm"
@@ -111,6 +129,12 @@ export const Sidebar = () => {
                 <item.icon className="w-5 h-5 flex-shrink-0" />
                 {!sidebarCollapsed && (
                   <span className="truncate">{item.label}</span>
+                )}
+                {/* Live meeting indicator for students */}
+                {item.path === '/aluno/encontros' && hasLiveMeeting() && (
+                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center text-xs font-bold">
+                    1
+                  </div>
                 )}
               </NavLink>
             </li>
