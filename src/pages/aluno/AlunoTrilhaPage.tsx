@@ -14,7 +14,11 @@ export const AlunoTrilhaPage = () => {
   const studentEnrollments = enrollments.filter(e => e.studentId === currentUser.id);
   const studentClasses = classes.filter(c => studentEnrollments.some(e => e.classId === c.id));
   const studentTrails = trails.filter(t => 
-    studentClasses.some(c => c.trailId === t.id)
+    studentClasses.some(c => 
+      (c.trailIds && c.trailIds.includes(t.id)) || 
+      // @ts-ignore - backward compatibility
+      c.trailId === t.id
+    )
   );
 
   const userPointsData = userPoints.find(up => up.userId === currentUser.id);
@@ -125,7 +129,11 @@ export const AlunoTrilhaPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {studentClasses.slice(0, 2).map((classroom) => {
                 const enrollment = studentEnrollments.find(e => e.classId === classroom.id);
-                const trail = trails.find(t => t.id === classroom.trailId);
+                const trail = trails.find(t => 
+                  (classroom.trailIds && classroom.trailIds.includes(t.id)) || 
+                  // @ts-ignore - backward compatibility
+                  classroom.trailId === t.id
+                );
                 
                 return (
                   <div key={classroom.id} className="p-4 border rounded-lg hover:shadow-md transition-shadow">
