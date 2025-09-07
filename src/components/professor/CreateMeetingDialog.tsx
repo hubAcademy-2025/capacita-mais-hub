@@ -50,7 +50,9 @@ export const CreateMeetingDialog = ({ children }: CreateMeetingDialogProps) => {
       dateTime: `${date}T${time}:00`,
       duration: parseInt(duration),
       description,
-      status: 'scheduled'
+      status: 'scheduled',
+      hostUserId: currentUser.id,
+      attendanceList: []
     };
 
     addMeeting(meeting);

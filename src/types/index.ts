@@ -114,7 +114,20 @@ export interface Meeting {
   dateTime: string;
   duration: number;
   description?: string;
-  status: 'scheduled' | 'completed' | 'cancelled';
+  status: 'scheduled' | 'live' | 'completed' | 'cancelled';
+  meetingUrl?: string;
+  hostUserId: string;
+  maxParticipants?: number;
+  attendanceList: MeetingAttendance[];
+}
+
+export interface MeetingAttendance {
+  meetingId: string;
+  userId: string;
+  checkInTime: string;
+  checkOutTime?: string;
+  duration?: number; // in minutes
+  status: 'present' | 'absent' | 'late';
 }
 
 export interface Notification {

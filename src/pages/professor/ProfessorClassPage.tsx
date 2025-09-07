@@ -84,7 +84,9 @@ export const ProfessorClassPage = () => {
       dateTime: `${newMeetingDate}T${newMeetingTime}:00`,
       duration: parseInt(newMeetingDuration),
       description: `Encontro agendado para a turma ${classroom.name}`,
-      status: 'scheduled'
+      status: 'scheduled',
+      hostUserId: currentUser.id,
+      attendanceList: []
     };
 
     console.log('Meeting object created:', meeting);

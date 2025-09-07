@@ -1,4 +1,6 @@
-import { Calendar, Clock, Users, Video, Plus } from 'lucide-react';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Calendar, Users, Clock, Video, Plus } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -6,6 +8,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { CreateMeetingDialog } from '@/components/professor/CreateMeetingDialog';
 
 export const ProfessorEncontrosPage = () => {
+  const navigate = useNavigate();
   const { currentUser, classes, meetings, users } = useAppStore();
 
   if (!currentUser) return null;
@@ -144,7 +147,16 @@ export const ProfessorEncontrosPage = () => {
                     {isToday && (
                       <Badge variant="destructive" className="mr-2">Hoje</Badge>
                     )}
-                    <Button size="sm" variant="outline">
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => {
+                        if (isToday) {
+                          navigate(`/professor/encontro/${meeting.id}`);
+                        }
+                      }}
+                      disabled={!isToday}
+                    >
                       {isToday ? 'Iniciar Encontro' : 'Ver Detalhes'}
                     </Button>
                   </div>

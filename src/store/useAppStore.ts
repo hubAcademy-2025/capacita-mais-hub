@@ -34,6 +34,7 @@ interface AppState {
   deleteClass: (classId: string) => void;
   
   addMeeting: (meeting: Meeting) => void;
+  updateMeeting: (meetingId: string, updates: Partial<Meeting>) => void;
   updateEnrollment: (studentId: string, classId: string, updates: Partial<Enrollment>) => void;
   
   // Notifications
@@ -93,6 +94,12 @@ export const useAppStore = create<AppState>((set, get) => ({
   
   addMeeting: (meeting) => set((state) => ({
     meetings: [...state.meetings, meeting]
+  })),
+  
+  updateMeeting: (meetingId, updates) => set((state) => ({
+    meetings: state.meetings.map(m => 
+      m.id === meetingId ? { ...m, ...updates } : m
+    )
   })),
   
   updateEnrollment: (studentId, classId, updates) => set((state) => ({

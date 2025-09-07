@@ -213,7 +213,9 @@ export const meetings: Meeting[] = [
     dateTime: '2024-03-15T14:00:00',
     duration: 120,
     description: 'Implementação prática de useReducer e useContext',
-    status: 'scheduled'
+    status: 'scheduled',
+    hostUserId: '2', // Professor João
+    attendanceList: []
   },
   {
     id: '2',
@@ -222,7 +224,9 @@ export const meetings: Meeting[] = [
     dateTime: '2024-03-20T16:00:00',
     duration: 90,
     description: 'Sessão para tirar dúvidas e revisar conceitos',
-    status: 'scheduled'
+    status: 'scheduled',
+    hostUserId: '2', // Professor João
+    attendanceList: []
   },
   {
     id: '3',
@@ -231,7 +235,9 @@ export const meetings: Meeting[] = [
     dateTime: '2024-03-18T10:00:00',
     duration: 180,
     description: 'Prática de técnicas de comunicação',
-    status: 'scheduled'
+    status: 'scheduled',
+    hostUserId: '3', // Professor Ana
+    attendanceList: []
   }
 ];
 

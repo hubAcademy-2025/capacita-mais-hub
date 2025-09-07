@@ -1,3 +1,5 @@
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Calendar, Clock, Users, Video } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -5,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useAppStore } from '@/store/useAppStore';
 
 export const AlunoEncontrosPage = () => {
+  const navigate = useNavigate();
   const { currentUser, classes, enrollments, meetings, users } = useAppStore();
 
   if (!currentUser) return null;
@@ -84,7 +87,10 @@ export const AlunoEncontrosPage = () => {
                     {isToday && (
                       <Badge variant="destructive" className="mr-2">Hoje</Badge>
                     )}
-                    <Button size="sm">
+                    <Button 
+                      size="sm"
+                      onClick={() => navigate(`/aluno/encontro/${meeting.id}`)}
+                    >
                       {isToday ? 'Entrar' : 'Detalhes'}
                     </Button>
                   </div>
@@ -140,7 +146,11 @@ export const AlunoEncontrosPage = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant="secondary">Concluído</Badge>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => navigate(`/aluno/encontro/${meeting.id}`)}
+                    >
                       Ver Gravação
                     </Button>
                   </div>
