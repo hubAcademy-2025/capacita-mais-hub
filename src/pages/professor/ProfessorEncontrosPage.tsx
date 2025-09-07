@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAppStore } from '@/store/useAppStore';
+import { CreateMeetingDialog } from '@/components/professor/CreateMeetingDialog';
 
 export const ProfessorEncontrosPage = () => {
   const { currentUser, classes, meetings, users } = useAppStore();
@@ -37,10 +38,12 @@ export const ProfessorEncontrosPage = () => {
           <h1 className="text-3xl font-bold text-foreground">Meus Encontros</h1>
           <p className="text-muted-foreground">Gerencie seus encontros e aulas ao vivo</p>
         </div>
-        <Button onClick={() => alert('Funcionalidade de agendar encontro será implementada')}>
-          <Plus className="w-4 h-4 mr-2" />
-          Agendar Encontro
-        </Button>
+        <CreateMeetingDialog>
+          <Button>
+            <Plus className="w-4 h-4 mr-2" />
+            Agendar Encontro
+          </Button>
+        </CreateMeetingDialog>
       </div>
 
       {/* Quick Stats */}
@@ -141,8 +144,8 @@ export const ProfessorEncontrosPage = () => {
                     {isToday && (
                       <Badge variant="destructive" className="mr-2">Hoje</Badge>
                     )}
-                    <Button size="sm">
-                      {isToday ? 'Iniciar' : 'Editar'}
+                    <Button size="sm" variant="outline">
+                      {isToday ? 'Iniciar Encontro' : 'Ver Detalhes'}
                     </Button>
                   </div>
                 </div>
@@ -199,8 +202,8 @@ export const ProfessorEncontrosPage = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant="secondary">Concluído</Badge>
-                    <Button variant="outline" size="sm">
-                      Ver Relatório
+                    <Button variant="outline" size="sm" disabled>
+                      Concluído
                     </Button>
                   </div>
                 </div>
