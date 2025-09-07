@@ -19,11 +19,12 @@ export const AlunoDashboard = () => {
   
   const enrollment = currentUser ? getStudentEnrollment(currentUser.id) : null;
   const myClass = enrollment ? classes.find(c => c.id === enrollment.classId) : null;
-  const myTrail = myClass ? trails.find(t => 
-    myClass.trailIds?.includes(t.id) || 
-    // @ts-ignore - backward compatibility
-    myClass.trailId === t.id
-  ) : null;
+  // Handle multiple trails for a class
+  const myTrails = myClass && myClass.trailIds ? 
+    trails.filter(t => myClass.trailIds.includes(t.id)) : 
+    myClass && myClass.trailId ? 
+    trails.filter(t => t.id === myClass.trailId) : [];
+  const myTrail = myTrails[0] || null;
   const professor = myClass ? users.find(u => 
     myClass.professorIds?.includes(u.id) || 
     // @ts-ignore - backward compatibility
@@ -41,7 +42,7 @@ export const AlunoDashboard = () => {
   const completedModules = Math.floor((enrollment?.progress || 0) / 100 * totalModules);
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="p-6 space-y-6 animate-fade-in">
       {/* Welcome Section */}
       <div className="bg-gradient-primary text-primary-foreground rounded-xl p-6">
         <div className="flex items-center justify-between">
