@@ -19,7 +19,7 @@ export const Layout = ({ title }: LayoutProps) => {
         
         <main className={`flex-1 transition-all duration-300 ease-in-out ${
           sidebarCollapsed ? 'ml-16' : 'ml-64'
-        }`}>
+        } overflow-x-auto`}>
           <Outlet />
         </main>
       </div>

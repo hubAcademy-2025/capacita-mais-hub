@@ -84,8 +84,12 @@ const App = () => (
           <Route path="/aluno/turma/:classId/trilha/:trailId/modulo/:moduleId/conteudo/:contentId" element={<AlunoContentViewerPage />} />
           
           {/* Global Routes */}
-          <Route path="/configuracoes" element={<ConfiguracoesPage />} />
-          <Route path="/perfil" element={<PerfilPage />} />
+          <Route path="/configuracoes" element={<Layout title="Configurações" />}>
+            <Route index element={<ConfiguracoesPage />} />
+          </Route>
+          <Route path="/perfil" element={<Layout title="Perfil" />}>
+            <Route index element={<PerfilPage />} />
+          </Route>
           
           {/* Catch-all route */}
           <Route path="*" element={<NotFound />} />

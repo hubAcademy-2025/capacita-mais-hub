@@ -1,9 +1,10 @@
-import { Building, Users, BookOpen, BarChart3, Plus } from 'lucide-react';
+import { Building, Users, BookOpen, BarChart3 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { StatsCard } from '@/components/ui/stats-card';
 import { useAppStore } from '@/store/useAppStore';
+import { CreateClassDialog } from '@/components/admin/CreateClassDialog';
+import { ManageClassDialog } from '@/components/admin/ManageClassDialog';
 
 export const AdminTurmasPage = () => {
   const { classes, users, trails } = useAppStore();
@@ -25,10 +26,7 @@ export const AdminTurmasPage = () => {
           <h1 className="text-3xl font-bold text-foreground">Gestão de Turmas</h1>
           <p className="text-muted-foreground">Gerencie todas as turmas da plataforma</p>
         </div>
-        <Button onClick={() => alert('Funcionalidade de criar turma será implementada')}>
-          <Plus className="w-4 h-4 mr-2" />
-          Nova Turma
-        </Button>
+        <CreateClassDialog />
       </div>
 
       {/* Stats Grid */}
@@ -88,9 +86,7 @@ export const AdminTurmasPage = () => {
                         {classroom.status === 'active' ? 'Ativa' : 'Inativa'}
                       </Badge>
                     </div>
-                    <Button variant="outline" size="sm" onClick={() => alert('Funcionalidade de gerenciar turma será implementada')}>
-                      Gerenciar
-                    </Button>
+                    <ManageClassDialog classroom={classroom} />
                   </div>
                 </div>
               );

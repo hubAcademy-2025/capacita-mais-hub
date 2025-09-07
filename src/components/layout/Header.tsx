@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Bell, User, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +21,7 @@ interface HeaderProps {
 export const Header = ({ title }: HeaderProps) => {
   const { currentUser, currentRole, setCurrentUser, notifications } = useAppStore();
   const [showNotifications, setShowNotifications] = useState(false);
+  const navigate = useNavigate();
   
   const userNotifications = notifications.filter(n => n.userId === currentUser?.id);
   const unreadCount = userNotifications.filter(n => !n.isRead).length;
@@ -30,7 +32,7 @@ export const Header = ({ title }: HeaderProps) => {
       setCurrentUser(user);
       // Navigate to appropriate dashboard
       const basePath = role === 'admin' ? '/admin' : role === 'professor' ? '/professor' : '/aluno';
-      window.location.href = basePath;
+      navigate(basePath);
     }
   };
 
@@ -119,7 +121,7 @@ export const Header = ({ title }: HeaderProps) => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem onClick={() => window.location.href = '/perfil'}>
+              <DropdownMenuItem onClick={() => navigate('/perfil')}>
                 <User className="w-4 h-4 mr-2" />
                 Perfil
               </DropdownMenuItem>
