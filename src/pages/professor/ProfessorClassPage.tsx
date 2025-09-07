@@ -70,7 +70,12 @@ export const ProfessorClassPage = () => {
   const students = users.filter(u => classroom.studentIds.includes(u.id));
 
   const handleCreateMeeting = () => {
-    if (!newMeetingTitle || !newMeetingDate || !newMeetingTime) return;
+    console.log('Creating meeting...', { newMeetingTitle, newMeetingDate, newMeetingTime });
+    
+    if (!newMeetingTitle || !newMeetingDate || !newMeetingTime) {
+      console.log('Missing required fields');
+      return;
+    }
 
     const meeting: Meeting = {
       id: Date.now().toString(),
@@ -78,10 +83,14 @@ export const ProfessorClassPage = () => {
       title: newMeetingTitle,
       dateTime: `${newMeetingDate}T${newMeetingTime}:00`,
       duration: parseInt(newMeetingDuration),
+      description: `Encontro agendado para a turma ${classroom.name}`,
       status: 'scheduled'
     };
 
+    console.log('Meeting object created:', meeting);
     addMeeting(meeting);
+    console.log('Meeting added to store');
+    
     setNewMeetingTitle('');
     setNewMeetingDate('');
     setNewMeetingTime('');
@@ -283,35 +292,66 @@ export const ProfessorClassPage = () => {
               </CardHeader>
               <CardContent>
                 {showNewMeetingForm && (
-                  <div className="space-y-4 p-4 border rounded-lg mb-6">
-                    <h3 className="font-semibold">Novo Encontro</h3>
+                  <div className="space-y-4 p-6 border rounded-lg mb-6 bg-muted/20">
+                    <h3 className="font-semibold text-lg">Agendar Novo Encontro</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="md:col-span-2">
+                        <label className="text-sm font-medium text-foreground mb-2 block">
+                          Título do Encontro *
+                        </label>
                         <Input
-                          placeholder="Título do encontro"
+                          placeholder="Ex: Aula Prática - React Hooks"
                           value={newMeetingTitle}
                           onChange={(e) => setNewMeetingTitle(e.target.value)}
+                          required
                         />
                       </div>
-                      <Input
-                        type="date"
-                        value={newMeetingDate}
-                        onChange={(e) => setNewMeetingDate(e.target.value)}
-                      />
-                      <Input
-                        type="time"
-                        value={newMeetingTime}
-                        onChange={(e) => setNewMeetingTime(e.target.value)}
-                      />
-                      <Input
-                        type="number"
-                        placeholder="Duração (minutos)"
-                        value={newMeetingDuration}
-                        onChange={(e) => setNewMeetingDuration(e.target.value)}
-                      />
+                      <div>
+                        <label className="text-sm font-medium text-foreground mb-2 block">
+                          Data *
+                        </label>
+                        <Input
+                          type="date"
+                          value={newMeetingDate}
+                          onChange={(e) => setNewMeetingDate(e.target.value)}
+                          min={new Date().toISOString().split('T')[0]}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-foreground mb-2 block">
+                          Horário *
+                        </label>
+                        <Input
+                          type="time"
+                          value={newMeetingTime}
+                          onChange={(e) => setNewMeetingTime(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="text-sm font-medium text-foreground mb-2 block">
+                          Duração (minutos)
+                        </label>
+                        <Input
+                          type="number"
+                          placeholder="90"
+                          value={newMeetingDuration}
+                          onChange={(e) => setNewMeetingDuration(e.target.value)}
+                          min="15"
+                          max="480"
+                        />
+                      </div>
                     </div>
                     <div className="flex gap-2">
-                      <Button onClick={handleCreateMeeting}>Criar Encontro</Button>
+                      <Button 
+                        onClick={handleCreateMeeting}
+                        disabled={!newMeetingTitle || !newMeetingDate || !newMeetingTime}
+                        className="bg-primary hover:bg-primary/90"
+                      >
+                        <Calendar className="w-4 h-4 mr-2" />
+                        Criar Encontro
+                      </Button>
                       <Button variant="outline" onClick={() => setShowNewMeetingForm(false)}>
                         Cancelar
                       </Button>
