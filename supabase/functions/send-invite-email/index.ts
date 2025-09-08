@@ -128,7 +128,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     try {
       const emailResponse = await resend.emails.send({
-        from: "Sistema de Ensino <onboarding@resend.dev>",
+        from: "Sistema de Ensino <noreply@viralmais.marketing>",
         to: [email],
         subject: `Convite para acessar o sistema como ${getRoleName(role)}`,
         html: createInviteEmailHTML(name, getRoleName(role), invitedBy, inviteUrl),
