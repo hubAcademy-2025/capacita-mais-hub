@@ -2,22 +2,35 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Users, Clock } from 'lucide-react';
-import { useAppStore } from '@/store/useAppStore';
+import { ArrowLeft, Users, Clock, AlertCircle } from 'lucide-react';
 import { VideoMeetingRoom } from '@/components/video/VideoMeetingRoom';
 import { useToast } from '@/components/ui/use-toast';
+import { useMeetings } from '@/hooks/useMeetings';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
+import { useClasses } from '@/hooks/useClasses';
 
 export const ProfessorMeetingRoomPage: React.FC = () => {
   const { meetingId } = useParams<{ meetingId: string }>();
   const navigate = useNavigate();
-  const { meetings, updateMeeting, classes, users } = useAppStore();
+  const { getMeetingById, updateMeeting } = useMeetings();
+  const { userProfile } = useSupabaseAuth();
+  const { classes } = useClasses();
   const { toast } = useToast();
-  const [meeting, setMeeting] = useState(() => 
-    meetings.find(m => m.id === meetingId)
-  );
+  
+  const [meeting, setMeeting] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!meeting) {
+    if (!meetingId) {
+      navigate('/professor/encontros');
+      return;
+    }
+
+    const foundMeeting = getMeetingById(meetingId);
+    setMeeting(foundMeeting);
+    setLoading(false);
+
+    if (!foundMeeting) {
       toast({
         title: "Erro",
         description: "Reunião não encontrada",
@@ -27,20 +40,46 @@ export const ProfessorMeetingRoomPage: React.FC = () => {
       return;
     }
 
+    // Check if user has permission to access this meeting
+    if (userProfile && !userProfile.roles?.includes('admin')) {
+      const userClasses = classes.filter(c => 
+        c.professors.some(p => p.id === userProfile.id)
+      );
+      const hasAccess = userClasses.some(c => c.id === foundMeeting.class_id);
+      
+      if (!hasAccess) {
+        toast({
+          title: "Acesso negado",
+          description: "Você não tem permissão para acessar esta reunião",
+          variant: "destructive",
+        });
+        navigate('/professor/encontros');
+        return;
+      }
+    }
+
     // Update meeting status to live when room is accessed
-    if (meeting.status === 'scheduled') {
-      updateMeeting(meeting.id, { status: 'live' });
+    if (foundMeeting.status === 'scheduled') {
+      updateMeeting(foundMeeting.id, { status: 'live' });
       setMeeting(prev => prev ? { ...prev, status: 'live' } : null);
     }
-  }, [meeting, meetingId, navigate, updateMeeting]);
+  }, [meetingId, getMeetingById, navigate, userProfile, classes, updateMeeting]);
 
-  const handleEndMeeting = () => {
+  const handleEndMeeting = async () => {
     if (meeting) {
-      updateMeeting(meeting.id, { status: 'completed' });
-      toast({
-        title: "Reunião encerrada",
-        description: "A reunião foi encerrada com sucesso",
-      });
+      try {
+        await updateMeeting(meeting.id, { status: 'completed' });
+        toast({
+          title: "Reunião encerrada",
+          description: "A reunião foi encerrada com sucesso",
+        });
+      } catch (error) {
+        toast({
+          title: "Erro",
+          description: "Erro ao encerrar reunião",
+          variant: "destructive",
+        });
+      }
     }
     navigate('/professor/encontros');
   };
@@ -50,7 +89,7 @@ export const ProfessorMeetingRoomPage: React.FC = () => {
     // Additional attendance processing can be done here
   };
 
-  if (!meeting) {
+  if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <Card>
@@ -62,8 +101,28 @@ export const ProfessorMeetingRoomPage: React.FC = () => {
     );
   }
 
-  const classInfo = classes.find(c => c.id === meeting.classId);
-  const enrolledStudents = classInfo?.studentIds?.length || 0;
+  if (!meeting) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Card>
+          <CardContent className="p-8 text-center">
+            <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Reunião não encontrada</h3>
+            <p className="text-muted-foreground mb-4">
+              A reunião que você está tentando acessar não foi encontrada.
+            </p>
+            <Button onClick={() => navigate('/professor/encontros')}>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Voltar aos Encontros
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const classInfo = classes.find(c => c.id === meeting.class_id);
+  const enrolledStudents = classInfo?.student_count || 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -92,14 +151,12 @@ export const ProfessorMeetingRoomPage: React.FC = () => {
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Clock className="w-4 h-4" />
                 <span className="text-sm">
-                  {new Date(meeting.dateTime).toLocaleString()}
+                  {new Date(meeting.date_time).toLocaleString('pt-BR')}
                 </span>
               </div>
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Users className="w-4 h-4" />
-                <span className="text-sm">
-                  {meeting.attendanceList?.filter(a => !a.checkOutTime).length || 0} online
-                </span>
+                <span className="text-sm">Duração: {meeting.duration}min</span>
               </div>
             </div>
           </div>
