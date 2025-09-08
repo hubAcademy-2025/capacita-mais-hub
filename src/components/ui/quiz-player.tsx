@@ -19,6 +19,7 @@ import {
   ChevronRight 
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useQuizAttempts, type SecureQuizQuestion } from '@/hooks/useQuizAttempts';
 import type { Quiz, QuizQuestion } from '@/types';
 
 interface QuizPlayerProps {
@@ -43,10 +44,48 @@ export const QuizPlayer = ({ quiz, onComplete, onMarkCompleted }: QuizPlayerProp
   const [showResults, setShowResults] = useState(false);
   const [quizAnswers, setQuizAnswers] = useState<QuizAnswer[]>([]);
   const { toast } = useToast();
+  const { getQuizQuestionsForAttempt, getQuizQuestionsWithAnswers } = useQuizAttempts();
+  
+  // Fetch secure quiz questions without answers for taking the quiz
+  const [secureQuestions, setSecureQuestions] = useState<SecureQuizQuestion[]>([]);
+  const [questionsWithAnswers, setQuestionsWithAnswers] = useState<SecureQuizQuestion[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchQuizQuestions = async () => {
+      try {
+        const questions = await getQuizQuestionsForAttempt(quiz.id);
+        setSecureQuestions(questions);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const currentQuestion = quiz.questions[currentQuestionIndex];
-  const isLastQuestion = currentQuestionIndex === quiz.questions.length - 1;
-  const progressPercentage = ((currentQuestionIndex + 1) / quiz.questions.length) * 100;
+    fetchQuizQuestions();
+  }, [quiz.id, getQuizQuestionsForAttempt]);
+
+  const currentQuestion = secureQuestions[currentQuestionIndex];
+  const isLastQuestion = currentQuestionIndex === secureQuestions.length - 1;
+  const progressPercentage = ((currentQuestionIndex + 1) / secureQuestions.length) * 100;
+  
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p>Carregando quiz...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!secureQuestions.length) {
+    return (
+      <div className="text-center p-8">
+        <p className="text-muted-foreground">Nenhuma pergunta encontrada para este quiz.</p>
+      </div>
+    );
+  }
 
   // Timer
   useEffect(() => {
@@ -71,22 +110,22 @@ export const QuizPlayer = ({ quiz, onComplete, onMarkCompleted }: QuizPlayerProp
     }));
   };
 
-  const checkAnswer = (question: QuizQuestion, userAnswer: any): boolean => {
-    if (!userAnswer) return false;
+  const checkAnswer = (question: SecureQuizQuestion, userAnswer: any): boolean => {
+    if (!userAnswer || !question.correct_answer) return false;
 
     switch (question.type) {
       case 'single-choice':
       case 'true-false':
       case 'text':
-        return userAnswer.toString().toLowerCase() === question.correctAnswer.toString().toLowerCase();
+        return userAnswer.toString().toLowerCase() === question.correct_answer.toString().toLowerCase();
       
       case 'number':
-        return parseFloat(userAnswer) === parseFloat(question.correctAnswer.toString());
+        return parseFloat(userAnswer) === parseFloat(question.correct_answer.toString());
       
       case 'multiple-choice':
-        const correctAnswers = Array.isArray(question.correctAnswer) 
-          ? question.correctAnswer 
-          : [question.correctAnswer];
+        const correctAnswers = Array.isArray(question.correct_answer) 
+          ? question.correct_answer 
+          : [question.correct_answer];
         const userAnswers = Array.isArray(userAnswer) ? userAnswer : [userAnswer];
         
         return correctAnswers.length === userAnswers.length &&
@@ -102,7 +141,7 @@ export const QuizPlayer = ({ quiz, onComplete, onMarkCompleted }: QuizPlayerProp
     let totalPoints = 0;
     let earnedPoints = 0;
 
-    quiz.questions.forEach(question => {
+    secureQuestions.forEach(question => {
       const userAnswer = answers[question.id];
       const isCorrect = checkAnswer(question, userAnswer);
       
@@ -126,7 +165,7 @@ export const QuizPlayer = ({ quiz, onComplete, onMarkCompleted }: QuizPlayerProp
   };
 
   const handleNext = () => {
-    if (currentQuestionIndex < quiz.questions.length - 1) {
+    if (currentQuestionIndex < secureQuestions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
     }
   };
@@ -174,7 +213,7 @@ export const QuizPlayer = ({ quiz, onComplete, onMarkCompleted }: QuizPlayerProp
     });
   };
 
-  const renderQuestion = (question: QuizQuestion) => {
+  const renderQuestion = (question: SecureQuizQuestion) => {
     const userAnswer = answers[question.id];
 
     switch (question.type) {
@@ -286,10 +325,10 @@ export const QuizPlayer = ({ quiz, onComplete, onMarkCompleted }: QuizPlayerProp
 
           <Separator />
 
-          {quiz.showCorrectAnswers && (
+          {quiz.showCorrectAnswers && questionsWithAnswers.length > 0 && (
             <div className="space-y-4">
               <h3 className="font-semibold">Revisão das Respostas:</h3>
-              {quiz.questions.map((question, index) => {
+              {questionsWithAnswers.map((question, index) => {
                 const result = quizAnswers.find(a => a.questionId === question.id);
                 return (
                   <div key={question.id} className="border rounded-lg p-4">
@@ -306,9 +345,9 @@ export const QuizPlayer = ({ quiz, onComplete, onMarkCompleted }: QuizPlayerProp
                       <p>
                         <strong>Sua resposta:</strong> {result?.answer?.toString() || 'Não respondida'}
                       </p>
-                      <p>
-                        <strong>Resposta correta:</strong> {question.correctAnswer?.toString()}
-                      </p>
+                       <p>
+                         <strong>Resposta correta:</strong> {question.correct_answer?.toString()}
+                       </p>
                       {question.explanation && (
                         <p className="text-muted-foreground">
                           <strong>Explicação:</strong> {question.explanation}
@@ -360,7 +399,7 @@ export const QuizPlayer = ({ quiz, onComplete, onMarkCompleted }: QuizPlayerProp
         {/* Progress */}
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span>Pergunta {currentQuestionIndex + 1} de {quiz.questions.length}</span>
+            <span>Pergunta {currentQuestionIndex + 1} de {secureQuestions.length}</span>
             <span>{Math.round(progressPercentage)}%</span>
           </div>
           <Progress value={progressPercentage} />

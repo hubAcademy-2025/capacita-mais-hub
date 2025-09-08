@@ -882,6 +882,32 @@ export type Database = {
           name: string
         }[]
       }
+      get_quiz_questions_for_attempt: {
+        Args: { quiz_id_param: string }
+        Returns: {
+          id: string
+          options: Json
+          order_index: number
+          points: number
+          question: string
+          quiz_id: string
+          type: Database["public"]["Enums"]["question_type"]
+        }[]
+      }
+      get_quiz_questions_with_answers: {
+        Args: { quiz_id_param: string }
+        Returns: {
+          correct_answer: Json
+          explanation: string
+          id: string
+          options: Json
+          order_index: number
+          points: number
+          question: string
+          quiz_id: string
+          type: Database["public"]["Enums"]["question_type"]
+        }[]
+      }
       get_user_roles: {
         Args: { user_uuid?: string }
         Returns: string[]
