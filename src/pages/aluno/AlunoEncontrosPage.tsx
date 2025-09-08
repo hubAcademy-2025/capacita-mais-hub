@@ -7,13 +7,14 @@ import { Button } from '@/components/ui/button';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useEnrollments } from '@/hooks/useEnrollments';
 import { useClasses } from '@/hooks/useClasses';
-import { supabase } from '@/integrations/supabase/client';
+import { useMeetings } from '@/hooks/useMeetings';
 
 export const AlunoEncontrosPage = () => {
   const navigate = useNavigate();
   const { userProfile } = useSupabaseAuth();
   const { enrollments } = useEnrollments();
   const { classes } = useClasses();
+  const { meetings } = useMeetings();
 
   if (!userProfile) return null;
 
@@ -22,26 +23,12 @@ export const AlunoEncontrosPage = () => {
   const studentClassIds = studentEnrollments.map(e => e.class_id);
   const studentClasses = classes.filter(c => studentClassIds.includes(c.id));
   
-  // Fetch meetings for student's classes
-  const [meetings, setMeetings] = React.useState<any[]>([]);
-  
-  React.useEffect(() => {
-    if (studentClassIds.length > 0) {
-      const fetchMeetings = async () => {
-        const { data } = await supabase
-          .from('meetings')
-          .select('*')
-          .in('class_id', studentClassIds)
-          .order('date_time', { ascending: true });
-        setMeetings(data || []);
-      };
-      fetchMeetings();
-    }
-  }, [studentClassIds.join(',')]);
+  // Filter meetings for student's classes
+  const studentMeetings = meetings.filter(m => studentClassIds.includes(m.class_id));
 
   const now = new Date();
-  const upcomingMeetings = meetings.filter(m => new Date(m.date_time) > now);
-  const pastMeetings = meetings.filter(m => new Date(m.date_time) <= now);
+  const upcomingMeetings = studentMeetings.filter(m => new Date(m.date_time) > now);
+  const pastMeetings = studentMeetings.filter(m => new Date(m.date_time) <= now);
 
   const getClassInfo = (classId: string) => {
     const classroom = studentClasses.find(c => c.id === classId);

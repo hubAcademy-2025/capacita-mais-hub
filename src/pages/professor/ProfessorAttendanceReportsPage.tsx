@@ -6,26 +6,29 @@ import { Button } from '@/components/ui/button';
 import { Calendar, Clock, Users, TrendingUp, GraduationCap } from 'lucide-react';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useClasses } from '@/hooks/useClasses';
+import { useMeetings } from '@/hooks/useMeetings';
 
 export const ProfessorAttendanceReportsPage = () => {
   const { userProfile } = useSupabaseAuth();
   const { classes } = useClasses();
+  const { meetings } = useMeetings();
 
   if (!userProfile) return null;
 
   // Get professor's classes (including admin as they can see all classes)
-  const professorClasses = userProfile.roles.includes('admin') 
+  const professorClasses = userProfile.roles?.includes('admin') 
     ? classes  // Admin can see all classes
     : classes.filter(c => c.professors.some(p => p.id === userProfile.id));
 
-  // Placeholder data since meetings are not implemented yet
-  const attendanceStats = {
-    totalMeetings: 0,
-    totalAttendances: 0,
-    averageAttendance: 0
-  };
+  const professorClassIds = professorClasses.map(c => c.id);
+  const professorMeetings = meetings.filter(m => professorClassIds.includes(m.class_id));
 
-  const classReports: any[] = [];
+  // Calculate attendance stats
+  const attendanceStats = {
+    totalMeetings: professorMeetings.length,
+    totalAttendances: 0, // Will be calculated from attendance data when available
+    averageAttendance: professorMeetings.length > 0 ? 0 : 0
+  };
 
 
   return (

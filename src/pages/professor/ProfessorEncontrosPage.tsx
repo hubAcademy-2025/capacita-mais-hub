@@ -7,23 +7,32 @@ import { Button } from '@/components/ui/button';
 import { CreateMeetingDialog } from '@/components/professor/CreateMeetingDialog';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useClasses } from '@/hooks/useClasses';
+import { useMeetings } from '@/hooks/useMeetings';
 
 export const ProfessorEncontrosPage = () => {
   const navigate = useNavigate();
   const { userProfile } = useSupabaseAuth();
   const { classes } = useClasses();
+  const { meetings } = useMeetings();
 
   if (!userProfile) return null;
 
-  // Get professor's classes
-  const professorClasses = classes.filter(c => 
-    c.professors.some(p => p.id === userProfile.id)
-  );
+  // Get professor's classes (admin can see all)
+  const professorClasses = userProfile.roles?.includes('admin') 
+    ? classes
+    : classes.filter(c => c.professors.some(p => p.id === userProfile.id));
+
+  const professorClassIds = professorClasses.map(c => c.id);
   
-  // Placeholder for meetings data (to be implemented with meetings data)
-  const allMeetings: any[] = [];
-  const upcomingMeetings: any[] = [];
-  const pastMeetings: any[] = [];
+  // Filter meetings for professor's classes
+  const professorMeetings = meetings.filter(m => professorClassIds.includes(m.class_id));
+  
+  const now = new Date();
+  const upcomingMeetings = professorMeetings.filter(m => new Date(m.date_time) > now);
+  const pastMeetings = professorMeetings.filter(m => new Date(m.date_time) <= now);
+  
+  // Calculate total duration
+  const totalDuration = professorMeetings.reduce((sum, meeting) => sum + (meeting.duration || 0), 0);
 
   const getClassInfo = (classId: string) => {
     const classroom = professorClasses.find(c => c.id === classId);
@@ -94,7 +103,7 @@ export const ProfessorEncontrosPage = () => {
             <Video className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">{totalDuration}</div>
             <p className="text-xs text-muted-foreground">Minutos de encontros</p>
           </CardContent>
         </Card>
@@ -110,6 +119,57 @@ export const ProfessorEncontrosPage = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
+            {upcomingMeetings.map((meeting) => {
+              const { classroom } = getClassInfo(meeting.class_id);
+              const isToday = new Date(meeting.date_time).toDateString() === new Date().toDateString();
+              const isLive = meeting.status === 'live';
+              
+              return (
+                <div key={meeting.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-center gap-4">
+                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                      isLive ? 'bg-red-100 animate-pulse' : 'bg-primary/10'
+                    }`}>
+                      <Video className={`w-6 h-6 ${isLive ? 'text-red-600' : 'text-primary'}`} />
+                    </div>
+                    <div>
+                      <h3 className="font-medium">{meeting.title}</h3>
+                      <p className="text-sm text-muted-foreground">{classroom?.name}</p>
+                      <div className="flex items-center gap-4 mt-1">
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Calendar className="w-3 h-3" />
+                          {new Date(meeting.date_time).toLocaleDateString('pt-BR')}
+                        </div>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Clock className="w-3 h-3" />
+                          {new Date(meeting.date_time).toLocaleTimeString('pt-BR', { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                          })} ({meeting.duration}min)
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {isLive && (
+                      <Badge variant="destructive" className="mr-2 bg-red-500">AO VIVO</Badge>
+                    )}
+                    {isToday && !isLive && (
+                      <Badge variant="destructive" className="mr-2">Hoje</Badge>
+                    )}
+                    <Button 
+                      size="sm"
+                      variant={isLive || isToday ? "default" : "outline"}
+                      onClick={() => navigate(`/professor/meeting/${meeting.id}`)}
+                      className={isLive ? "bg-red-500 hover:bg-red-600" : isToday ? "bg-success hover:bg-success/90" : ""}
+                    >
+                      {isLive ? 'Entrar AO VIVO' : isToday ? 'Entrar' : 'Gerenciar'}
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+            
             {upcomingMeetings.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 <Calendar className="w-12 h-12 mx-auto mb-4" />
@@ -131,6 +191,44 @@ export const ProfessorEncontrosPage = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
+            {pastMeetings.slice(0, 5).map((meeting) => {
+              const { classroom } = getClassInfo(meeting.class_id);
+              
+              return (
+                <div key={meeting.id} className="flex items-center justify-between p-4 border rounded-lg opacity-75">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
+                      <Video className="w-6 h-6 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium">{meeting.title}</h3>
+                      <p className="text-sm text-muted-foreground">{classroom?.name}</p>
+                      <div className="flex items-center gap-4 mt-1">
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Calendar className="w-3 h-3" />
+                          {new Date(meeting.date_time).toLocaleDateString('pt-BR')}
+                        </div>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Clock className="w-3 h-3" />
+                          {meeting.duration}min
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary">Concluído</Badge>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => navigate(`/professor/meeting/${meeting.id}`)}
+                    >
+                      Detalhes
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+            
             {pastMeetings.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 <Clock className="w-12 h-12 mx-auto mb-4" />
