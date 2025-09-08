@@ -84,7 +84,7 @@ export const ProfessorTurmasPage = () => {
 
                 <div className="pt-4">
                   <Button 
-                    onClick={() => navigate(`/professor/turma/${classroom.id}`)}
+                    onClick={() => navigate(`/professor/turmas/${classroom.id}`)}
                     className="w-full"
                   >
                     Gerenciar Turma

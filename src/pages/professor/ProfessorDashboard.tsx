@@ -104,7 +104,7 @@ export const ProfessorDashboard = () => {
                       </div>
                       
                       <Button 
-                        onClick={() => navigate(`/professor/turma/${classItem.id}`)}
+                        onClick={() => navigate(`/professor/turmas/${classItem.id}`)}
                         size="sm" 
                         className="w-full"
                       >
@@ -160,7 +160,7 @@ export const ProfessorDashboard = () => {
                     <Button 
                       variant="outline" 
                       size="sm"
-                      onClick={() => navigate(`/professor/turma/${meeting.classId}`)}
+                      onClick={() => navigate(`/professor/turmas/${meeting.classId}`)}
                     >
                       Ver Turma
                     </Button>
