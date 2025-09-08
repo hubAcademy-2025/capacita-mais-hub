@@ -40,6 +40,28 @@ export interface Content {
   description?: string;
   isBlocked?: boolean;
   order: number;
+  quiz?: Quiz;
+}
+
+export interface Quiz {
+  id: string;
+  title: string;
+  description?: string;
+  questions: QuizQuestion[];
+  timeLimit?: number; // in minutes
+  passingScore: number; // percentage
+  allowRetakes: boolean;
+  showCorrectAnswers: boolean;
+}
+
+export interface QuizQuestion {
+  id: string;
+  question: string;
+  type: 'multiple-choice' | 'single-choice' | 'true-false' | 'number' | 'text';
+  options?: string[]; // for multiple/single choice
+  correctAnswer: string | string[] | number; // depends on type
+  explanation?: string;
+  points: number;
 }
 
 export interface Certificate {

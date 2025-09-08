@@ -186,55 +186,30 @@ export const AlunoContentViewerPage = () => {
       case 'quiz':
         return (
           <div className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5" />
-                  Quiz: {content.title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="bg-primary-light/20 rounded-lg p-4">
-                    <h3 className="font-medium mb-2">Pergunta de Exemplo</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Este é um exemplo de como um quiz seria exibido. Em uma implementação completa, 
-                      as perguntas viriam do backend.
-                    </p>
-                    
-                    <div className="space-y-2">
-                      <Button variant="outline" className="w-full justify-start">
-                        A) Primeira opção
-                      </Button>
-                      <Button variant="outline" className="w-full justify-start">
-                        B) Segunda opção
-                      </Button>
-                      <Button variant="outline" className="w-full justify-start">
-                        C) Terceira opção
-                      </Button>
-                      <Button variant="outline" className="w-full justify-start">
-                        D) Quarta opção
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">Status:</span>
-                      <Badge variant={userContentProgress?.completed ? "default" : "secondary"}>
-                        {userContentProgress?.completed ? "Concluído" : "Pendente"}
-                      </Badge>
-                    </div>
-                    
-                    {!userContentProgress?.completed && (
-                      <Button onClick={markContentAsCompleted}>
-                        Finalizar Quiz
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            {content.quiz ? (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <CheckCircle className="w-12 h-12 mx-auto mb-4 text-blue-600" />
+                  <h3 className="font-medium mb-2">Quiz: {content.title}</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Quiz com {content.quiz.questions.length} perguntas
+                  </p>
+                  <Button onClick={() => markContentAsCompleted()}>
+                    Iniciar Quiz
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <CheckCircle className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="font-medium mb-2">Quiz não configurado</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Este quiz ainda não foi configurado pelo professor.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </div>
         );
       
