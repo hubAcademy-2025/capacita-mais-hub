@@ -39,11 +39,15 @@ export const VideoMeetingRoom: React.FC<VideoMeetingRoomProps> = ({
     const script = document.createElement('script');
     script.src = 'https://meet.jit.si/external_api.js';
     script.async = true;
-    script.onload = initializeJitsi;
-    script.onerror = () => {
+    script.onload = () => {
+      console.log('Jitsi script loaded successfully');
+      initializeJitsi();
+    };
+    script.onerror = (error) => {
+      console.error('Failed to load Jitsi script:', error);
       toast({
         title: "Erro ao carregar video conferência",
-        description: "Não foi possível carregar o sistema de videoconferência",
+        description: "Não foi possível carregar o sistema de videoconferência. Verifique sua conexão com a internet.",
         variant: "destructive",
       });
     };
@@ -60,7 +64,14 @@ export const VideoMeetingRoom: React.FC<VideoMeetingRoomProps> = ({
   }, []);
 
   const initializeJitsi = () => {
-    if (!jitsiContainerRef.current || !currentUser) return;
+    console.log('Initializing Jitsi...');
+    if (!jitsiContainerRef.current || !currentUser) {
+      console.error('Missing container or user:', { 
+        container: !!jitsiContainerRef.current, 
+        currentUser: !!currentUser 
+      });
+      return;
+    }
 
     const roomName = `meeting-${meeting.id}`;
     const options = {
@@ -94,18 +105,29 @@ export const VideoMeetingRoom: React.FC<VideoMeetingRoomProps> = ({
       }
     };
 
-    const api = new window.JitsiMeetExternalAPI('meet.jit.si', options);
-    setJitsiApi(api);
+    try {
+      console.log('Creating JitsiMeetExternalAPI with options:', options);
+      const api = new window.JitsiMeetExternalAPI('meet.jit.si', options);
+      setJitsiApi(api);
+      console.log('Jitsi API created successfully');
 
-    // Event listeners
-    api.addEventListener('participantJoined', handleParticipantJoined);
-    api.addEventListener('participantLeft', handleParticipantLeft);
-    api.addEventListener('videoConferenceJoined', handleConferenceJoined);
-    api.addEventListener('videoConferenceLeft', handleConferenceLeft);
-    api.addEventListener('readyToClose', handleReadyToClose);
+      // Event listeners
+      api.addEventListener('participantJoined', handleParticipantJoined);
+      api.addEventListener('participantLeft', handleParticipantLeft);
+      api.addEventListener('videoConferenceJoined', handleConferenceJoined);
+      api.addEventListener('videoConferenceLeft', handleConferenceLeft);
+      api.addEventListener('readyToClose', handleReadyToClose);
 
-    // Auto check-in current user
-    handleCheckIn(currentUser.id);
+      // Auto check-in current user
+      handleCheckIn(currentUser.id);
+    } catch (error) {
+      console.error('Failed to initialize Jitsi API:', error);
+      toast({
+        title: "Erro ao inicializar videoconferência",
+        description: "Não foi possível conectar com o servidor de videoconferência",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleParticipantJoined = (event: any) => {
