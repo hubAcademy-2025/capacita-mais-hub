@@ -20,7 +20,7 @@ export const useUsers = () => {
       setLoading(true);
       setError(null);
       
-      // Get all profiles with their roles
+      // Get all profiles with their roles using a proper join
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select(`
@@ -28,23 +28,34 @@ export const useUsers = () => {
           name,
           email,
           avatar_url,
-          created_at,
-          user_roles!inner(role)
+          created_at
         `);
 
       if (profilesError) {
         throw profilesError;
       }
 
+      // Get all user roles
+      const { data: userRoles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id, role');
+
+      if (rolesError) {
+        throw rolesError;
+      }
+
       // Transform the data to include roles as array
-      const usersWithRoles = profiles?.map(profile => ({
-        id: profile.id,
-        name: profile.name,
-        email: profile.email,
-        avatar_url: profile.avatar_url,
-        created_at: profile.created_at,
-        roles: (profile.user_roles as any[])?.map(ur => ur.role) || []
-      })) || [];
+      const usersWithRoles = profiles?.map(profile => {
+        const roles = userRoles?.filter(ur => ur.user_id === profile.id)?.map(ur => ur.role) || [];
+        return {
+          id: profile.id,
+          name: profile.name,
+          email: profile.email,
+          avatar_url: profile.avatar_url,
+          created_at: profile.created_at,
+          roles
+        };
+      }) || [];
 
       setUsers(usersWithRoles);
     } catch (err) {
