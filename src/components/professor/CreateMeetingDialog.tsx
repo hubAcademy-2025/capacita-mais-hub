@@ -121,7 +121,7 @@ export const CreateMeetingDialog = ({ children }: CreateMeetingDialogProps) => {
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                min={new Date().toISOString().split('T')[0]}
+                min={new Date().toLocaleDateString('en-CA')}
                 required
               />
             </div>
