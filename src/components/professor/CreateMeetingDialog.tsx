@@ -13,15 +13,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { useAppStore } from '@/store/useAppStore';
-import { Meeting } from '@/types';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
+import { useClasses } from '@/hooks/useClasses';
+import { useToast } from '@/hooks/use-toast';
 
 interface CreateMeetingDialogProps {
   children: React.ReactNode;
 }
 
 export const CreateMeetingDialog = ({ children }: CreateMeetingDialogProps) => {
-  const { currentUser, classes, addMeeting } = useAppStore();
+  const { userProfile } = useSupabaseAuth();
+  const { classes } = useClasses();
+  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [selectedClassId, setSelectedClassId] = useState('');
@@ -30,42 +33,45 @@ export const CreateMeetingDialog = ({ children }: CreateMeetingDialogProps) => {
   const [duration, setDuration] = useState('90');
   const [description, setDescription] = useState('');
 
-  if (!currentUser) return null;
+  if (!userProfile) return null;
 
-  const professorClasses = classes.filter(c => 
-    (c.professorIds && c.professorIds.includes(currentUser.id)) || 
-    // @ts-ignore - backward compatibility
-    c.professorId === currentUser.id
-  );
+  console.log('CreateMeetingDialog - User Profile:', userProfile);
+  console.log('CreateMeetingDialog - All Classes:', classes);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Get professor's classes (including admin as they can see all classes)
+  const professorClasses = userProfile.roles.includes('admin') 
+    ? classes  // Admin can see all classes
+    : classes.filter(c => c.professors.some(p => p.id === userProfile.id));
+    
+  console.log('CreateMeetingDialog - Professor Classes:', professorClasses);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!title || !selectedClassId || !date || !time) return;
 
-    const meeting: Meeting = {
-      id: Date.now().toString(),
-      classId: selectedClassId,
-      title,
-      dateTime: `${date}T${time}:00`,
-      duration: parseInt(duration),
-      description,
-      status: 'scheduled',
-      hostUserId: currentUser.id,
-      attendanceList: [],
-      participantTypes: ['students']
-    };
-
-    addMeeting(meeting);
-    
-    // Reset form
-    setTitle('');
-    setSelectedClassId('');
-    setDate('');
-    setTime('');
-    setDuration('90');
-    setDescription('');
-    setOpen(false);
+    try {
+      // For now, just show success message since meetings table is not implemented yet
+      toast({
+        title: "Sucesso",
+        description: "Encontro agendado com sucesso! (Funcionalidade será implementada em breve)",
+      });
+      
+      // Reset form
+      setTitle('');
+      setSelectedClassId('');
+      setDate('');
+      setTime('');
+      setDuration('90');
+      setDescription('');
+      setOpen(false);
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Erro ao agendar encontro",
+        variant: "destructive",
+      });
+    }
   };
 
   const isFormValid = title && selectedClassId && date && time;
@@ -107,7 +113,7 @@ export const CreateMeetingDialog = ({ children }: CreateMeetingDialogProps) => {
               <SelectContent>
                 {professorClasses.map((classroom) => (
                   <SelectItem key={classroom.id} value={classroom.id}>
-                    {classroom.name} ({classroom.studentIds.length} alunos)
+                    {classroom.name} ({classroom.student_count} alunos)
                   </SelectItem>
                 ))}
               </SelectContent>

@@ -16,10 +16,15 @@ export const ProfessorDashboard = () => {
   
   if (!userProfile) return null;
 
-  // Get professor's classes - classes where the professor is assigned
-  const myClasses = classes.filter(c => 
-    c.professors.some(p => p.id === userProfile.id)
-  );
+  console.log('ProfessorDashboard - User Profile:', userProfile);
+  console.log('ProfessorDashboard - All Classes:', classes);
+
+  // Get professor's classes (including admin as they can see all classes)
+  const myClasses = userProfile.roles.includes('admin') 
+    ? classes  // Admin can see all classes
+    : classes.filter(c => c.professors.some(p => p.id === userProfile.id));
+  
+  console.log('ProfessorDashboard - My Classes:', myClasses);
   
   // Calculate total students across all professor's classes
   const totalStudents = myClasses.reduce((acc, c) => acc + c.student_count, 0);

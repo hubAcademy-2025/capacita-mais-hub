@@ -18,7 +18,7 @@ import { ProfessorDashboard } from '@/pages/professor/ProfessorDashboard';
 import { ProfessorTurmasPage } from '@/pages/professor/ProfessorTurmasPage';
 import { ProfessorEncontrosPage } from '@/pages/professor/ProfessorEncontrosPage';
 import { ProfessorAnalyticsPage } from '@/pages/professor/ProfessorAnalyticsPage';
-import { ProfessorClassPage } from '@/pages/professor/ProfessorClassPage';
+import { ProfessorClassDetailPage } from '@/pages/professor/ProfessorClassDetailPage';
 import { ProfessorContentViewerPage } from '@/pages/professor/ProfessorContentViewerPage';
 import { ProfessorAttendanceReportsPage } from '@/pages/professor/ProfessorAttendanceReportsPage';
 import { ProfessorMeetingRoomPage } from '@/pages/professor/ProfessorMeetingRoomPage';
@@ -125,7 +125,7 @@ const App: React.FC = () => {
           <Route path="/professor/turmas/:classId" element={
             <ProtectedRoute>
               <Layout>
-                <ProfessorClassPage />
+                <ProfessorClassDetailPage />
               </Layout>
             </ProtectedRoute>
           } />
