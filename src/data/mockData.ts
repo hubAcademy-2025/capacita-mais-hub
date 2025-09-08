@@ -215,7 +215,8 @@ export const meetings: Meeting[] = [
     description: 'Implementação prática de useReducer e useContext',
     status: 'scheduled',
     hostUserId: '2', // Professor João
-    attendanceList: []
+    attendanceList: [],
+    participantTypes: ['students']
   },
   {
     id: '2',
@@ -226,7 +227,8 @@ export const meetings: Meeting[] = [
     description: 'Sessão para tirar dúvidas e revisar conceitos',
     status: 'scheduled',
     hostUserId: '2', // Professor João
-    attendanceList: []
+    attendanceList: [],
+    participantTypes: ['students']
   },
   {
     id: '3',
@@ -237,7 +239,8 @@ export const meetings: Meeting[] = [
     description: 'Prática de técnicas de comunicação',
     status: 'scheduled',
     hostUserId: '3', // Professor Ana
-    attendanceList: []
+    attendanceList: [],
+    participantTypes: ['students', 'professors']
   }
 ];
 

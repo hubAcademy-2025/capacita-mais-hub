@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Users, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -15,9 +15,11 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
 import { useAppStore } from '@/store/useAppStore';
 import { Meeting } from '@/types';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface CreateMeetingDialogProps {
   children: React.ReactNode;
@@ -30,9 +32,11 @@ export const CreateMeetingDialog = ({ children }: CreateMeetingDialogProps) => {
   const [dateTime, setDateTime] = useState('');
   const [duration, setDuration] = useState('60');
   const [description, setDescription] = useState('');
+  const [participantTypes, setParticipantTypes] = useState<('students' | 'professors')[]>(['students']);
   
-  const { classes, addMeeting } = useAppStore();
+  const { classes, addMeeting, currentUser } = useAppStore();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleClassToggle = (classId: string) => {
     setSelectedClasses(prev => 
@@ -42,10 +46,18 @@ export const CreateMeetingDialog = ({ children }: CreateMeetingDialogProps) => {
     );
   };
 
+  const handleParticipantTypeToggle = (type: 'students' | 'professors') => {
+    setParticipantTypes(prev => 
+      prev.includes(type) 
+        ? prev.filter(t => t !== type)
+        : [...prev, type]
+    );
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!title.trim() || selectedClasses.length === 0 || !dateTime) {
+    if (!title.trim() || selectedClasses.length === 0 || !dateTime || participantTypes.length === 0) {
       toast({
         title: "Erro",
         description: "Por favor, preencha todos os campos obrigatórios.",
@@ -55,6 +67,7 @@ export const CreateMeetingDialog = ({ children }: CreateMeetingDialogProps) => {
     }
 
     // Create meetings for each selected class
+    const createdMeetings: Meeting[] = [];
     selectedClasses.forEach(classId => {
       const meeting: Meeting = {
         id: Math.random().toString(36).substr(2, 9),
@@ -67,10 +80,12 @@ export const CreateMeetingDialog = ({ children }: CreateMeetingDialogProps) => {
         meetingUrl: `https://meet.jit.si/capacita-${Math.random().toString(36).substr(2, 8)}`,
         attendanceList: [],
         maxParticipants: 50,
-        hostUserId: 'admin-001' // Admin as host
+        hostUserId: currentUser?.id || 'admin-001',
+        participantTypes
       };
       
       addMeeting(meeting);
+      createdMeetings.push(meeting);
     });
 
     toast({
@@ -84,7 +99,46 @@ export const CreateMeetingDialog = ({ children }: CreateMeetingDialogProps) => {
     setDateTime('');
     setDuration('60');
     setDescription('');
+    setParticipantTypes(['students']);
     setOpen(false);
+  };
+
+  const handleCreateAndStart = () => {
+    if (!title.trim() || selectedClasses.length === 0 || !dateTime || participantTypes.length === 0) {
+      toast({
+        title: "Erro",
+        description: "Por favor, preencha todos os campos obrigatórios.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Create the meeting first
+    const meeting: Meeting = {
+      id: Math.random().toString(36).substr(2, 9),
+      title,
+      classId: selectedClasses[0], // For now, start with first selected class
+      dateTime,
+      duration: parseInt(duration),
+      description,
+      status: 'live',
+      meetingUrl: `https://meet.jit.si/capacita-${Math.random().toString(36).substr(2, 8)}`,
+      attendanceList: [],
+      maxParticipants: 50,
+      hostUserId: currentUser?.id || 'admin-001',
+      participantTypes
+    };
+    
+    addMeeting(meeting);
+    setOpen(false);
+    
+    // Navigate to meeting room
+    navigate(`/admin/encontro/${meeting.id}`);
+    
+    toast({
+      title: "Encontro iniciado!",
+      description: "Você está sendo redirecionado para a sala de reunião.",
+    });
   };
 
   return (
@@ -99,7 +153,7 @@ export const CreateMeetingDialog = ({ children }: CreateMeetingDialogProps) => {
             Crie um encontro para uma ou várias turmas.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form id="meeting-form" onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label htmlFor="title">Título do Encontro *</Label>
             <Input
@@ -135,6 +189,33 @@ export const CreateMeetingDialog = ({ children }: CreateMeetingDialogProps) => {
                 {selectedClasses.length} turma(s) selecionada(s)
               </p>
             )}
+          </div>
+
+          <div>
+            <Label>Participantes *</Label>
+            <div className="flex flex-wrap gap-2 mt-2">
+              <Badge 
+                variant={participantTypes.includes('students') ? 'default' : 'outline'}
+                className="cursor-pointer"
+                onClick={() => handleParticipantTypeToggle('students')}
+              >
+                <Users className="w-3 h-3 mr-1" />
+                Alunos
+                {participantTypes.includes('students') && ' ✓'}
+              </Badge>
+              <Badge 
+                variant={participantTypes.includes('professors') ? 'default' : 'outline'}
+                className="cursor-pointer"
+                onClick={() => handleParticipantTypeToggle('professors')}
+              >
+                <GraduationCap className="w-3 h-3 mr-1" />
+                Professores
+                {participantTypes.includes('professors') && ' ✓'}
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Selecione quem poderá participar do encontro
+            </p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -177,12 +258,19 @@ export const CreateMeetingDialog = ({ children }: CreateMeetingDialogProps) => {
             />
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="gap-2">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancelar
             </Button>
             <Button type="submit">
               Agendar Encontro{selectedClasses.length > 1 ? 's' : ''}
+            </Button>
+            <Button 
+              type="button" 
+              onClick={handleCreateAndStart}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              Criar e Iniciar Agora
             </Button>
           </DialogFooter>
         </form>

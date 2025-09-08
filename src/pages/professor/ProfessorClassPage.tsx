@@ -86,7 +86,8 @@ export const ProfessorClassPage = () => {
       description: `Encontro agendado para a turma ${classroom.name}`,
       status: 'scheduled',
       hostUserId: currentUser.id,
-      attendanceList: []
+      attendanceList: [],
+      participantTypes: ['students']
     };
 
     console.log('Meeting object created:', meeting);

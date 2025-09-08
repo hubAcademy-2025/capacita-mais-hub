@@ -29,6 +29,7 @@ import { ProfessorClassPage } from "@/pages/professor/ProfessorClassPage";
 import { ProfessorContentViewerPage } from "@/pages/professor/ProfessorContentViewerPage";
 import { ConfiguracoesPage } from "@/pages/ConfiguracoesPage";
 import { PerfilPage } from "@/pages/PerfilPage";
+import { AdminMeetingRoomPage } from "@/pages/admin/AdminMeetingRoomPage";
 import { useAppStore } from "@/store/useAppStore";
 import NotFound from "./pages/NotFound";
 
@@ -72,7 +73,7 @@ const App = () => (
             <Route path="turmas/:classId" element={<AdminClassDetailPage />} />
             <Route path="trilhas" element={<AdminTrilhasPage />} />
             <Route path="usuarios" element={<AdminUsuariosPage />} />
-            <Route path="relatorios" element={<AdminRelatoriosPage />} />
+            <Route path="encontro/:meetingId" element={<AdminMeetingRoomPage />} />
           </Route>
             
             {/* Protected Professor Routes */}

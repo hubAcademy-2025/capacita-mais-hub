@@ -52,7 +52,8 @@ export const CreateMeetingDialog = ({ children }: CreateMeetingDialogProps) => {
       description,
       status: 'scheduled',
       hostUserId: currentUser.id,
-      attendanceList: []
+      attendanceList: [],
+      participantTypes: ['students']
     };
 
     addMeeting(meeting);

@@ -119,6 +119,7 @@ export interface Meeting {
   hostUserId: string;
   maxParticipants?: number;
   attendanceList: MeetingAttendance[];
+  participantTypes: ('students' | 'professors')[];
 }
 
 export interface MeetingAttendance {
