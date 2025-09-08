@@ -11,6 +11,20 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAppStore } from '@/store/useAppStore';
 
+// Helper function to get role display name
+const getRoleName = (role: string): string => {
+  switch (role) {
+    case 'admin':
+      return 'Administrador';
+    case 'professor':
+      return 'Professor';
+    case 'aluno':
+      return 'Aluno';
+    default:
+      return role;
+  }
+};
+
 export const AuthPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -73,21 +87,39 @@ export const AuthPage = () => {
     try {
       const redirectUrl = `${window.location.origin}/`;
       
-      const { error } = await supabase.auth.signUp({
+      // Prepare metadata for user creation
+      const userData: any = {
         email,
         password,
         options: {
-          emailRedirectTo: redirectUrl
+          emailRedirectTo: redirectUrl,
+          data: {
+            name: email.split('@')[0], // Extract name from email
+          }
         }
-      });
+      };
+
+      // If this is an invite, include the role in metadata
+      if (isInvite && inviteRole) {
+        userData.options.data.role = inviteRole;
+      }
+      
+      const { error } = await supabase.auth.signUp(userData);
 
       if (error) {
         setError(error.message);
       } else {
-        toast({
-          title: "Conta criada com sucesso!",
-          description: "Verifique seu email para confirmar a conta.",
-        });
+        if (isInvite) {
+          toast({
+            title: "Conta criada com sucesso!",
+            description: `Bem-vindo como ${inviteRole}! Verifique seu email para confirmar.`,
+          });
+        } else {
+          toast({
+            title: "Conta criada com sucesso!",
+            description: "Verifique seu email para confirmar a conta.",
+          });
+        }
       }
     } catch (err) {
       setError('Erro inesperado. Tente novamente.');
@@ -108,7 +140,7 @@ export const AuthPage = () => {
               <h3 className="font-medium text-blue-900 dark:text-blue-100">Convite Recebido!</h3>
             </div>
             <p className="text-sm text-blue-700 dark:text-blue-300">
-              Você foi convidado para participar do Capacita+ como <strong>{inviteRole}</strong>. 
+              Você foi convidado para participar do Capacita+ como <strong>{getRoleName(inviteRole)}</strong>. 
               Crie sua conta abaixo para começar.
             </p>
           </div>

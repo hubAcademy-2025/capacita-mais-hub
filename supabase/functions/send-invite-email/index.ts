@@ -64,7 +64,7 @@ const createInviteEmailHTML = (name: string, role: string, invitedBy: string, in
           
           <p class="message">
             Você foi convidado por <strong>${invitedBy}</strong> para participar da plataforma <strong>Capacita+</strong> 
-            como <span class="role-badge">${getRoleName(role)}</span>.
+            como <span class="role-badge">${role}</span>.
           </p>
           
           <p class="message">
@@ -122,35 +122,63 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Create the invite URL (pointing to the auth page)
-    const inviteUrl = `${req.headers.get('origin') || 'https://capacita.app'}/auth?invite=true&email=${encodeURIComponent(email)}&role=${role}`;
-
-    const htmlContent = createInviteEmailHTML(name, role, invitedBy, inviteUrl);
+    const inviteUrl = `${new URL(req.url).origin}/auth?invite=true&email=${encodeURIComponent(email)}&role=${encodeURIComponent(role)}`;
 
     console.log("Sending email to:", email);
 
-    const emailResponse = await resend.emails.send({
-      from: "Capacita+ <onboarding@resend.dev>",
-      to: [email],
-      subject: `Convite para participar do Capacita+ como ${getRoleName(role)}`,
-      html: htmlContent,
-    });
+    try {
+      const emailResponse = await resend.emails.send({
+        from: "Sistema de Ensino <onboarding@resend.dev>",
+        to: [email],
+        subject: `Convite para acessar o sistema como ${getRoleName(role)}`,
+        html: createInviteEmailHTML(name, getRoleName(role), invitedBy, inviteUrl),
+      });
 
-    console.log("Email sent successfully:", emailResponse);
+      console.log("Email sent successfully:", emailResponse);
 
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        messageId: emailResponse.data?.id,
-        inviteUrl: inviteUrl
-      }),
-      {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          ...corsHeaders,
-        },
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          messageId: emailResponse.data?.id,
+          inviteUrl 
+        }),
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+            ...corsHeaders,
+          },
+        }
+      );
+    } catch (emailError: any) {
+      console.error("Resend email error:", emailError);
+      
+      // Return detailed error information
+      const errorMessage = emailError.message || 'Erro desconhecido';
+      let errorDetails = errorMessage;
+      
+      if (errorMessage.includes('domain') || errorMessage.includes('Domain')) {
+        errorDetails = 'Domínio não verificado no Resend. Configure um domínio verificado em https://resend.com/domains';
+      } else if (errorMessage.includes('API key')) {
+        errorDetails = 'Chave da API do Resend inválida ou não configurada';
       }
-    );
+      
+      return new Response(
+        JSON.stringify({ 
+          error: 'Erro ao enviar email',
+          details: errorDetails,
+          originalError: errorMessage,
+          inviteUrl // Still return the invite URL so admin can share manually
+        }),
+        {
+          status: 500,
+          headers: {
+            "Content-Type": "application/json",
+            ...corsHeaders,
+          },
+        }
+      );
+    }
   } catch (error: any) {
     console.error("Error in send-invite-email function:", error);
     return new Response(
