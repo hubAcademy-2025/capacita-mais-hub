@@ -7,12 +7,15 @@ import { StatsCard } from '@/components/ui/stats-card';
 import { useAppStore } from '@/store/useAppStore';
 import { CreateTrailDialog } from '@/components/admin/CreateTrailDialog';
 import { EditTrailDialog } from '@/components/admin/EditTrailDialog';
+import { ManageTrailContentDialog } from '@/components/admin/ManageTrailContentDialog';
 import type { Trail } from '@/types';
 
 export const AdminTrilhasPage = () => {
   const { trails, classes } = useAppStore();
   const [editingTrail, setEditingTrail] = useState<Trail | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [manageContentTrail, setManageContentTrail] = useState<Trail | null>(null);
+  const [manageContentOpen, setManageContentOpen] = useState(false);
 
   const getTrailStats = () => {
     const totalModules = trails.reduce((acc, t) => acc + t.modules.length, 0);
@@ -122,18 +125,30 @@ export const AdminTrilhasPage = () => {
                       )}
                     </div>
 
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="w-full" 
-                      onClick={() => {
-                        setEditingTrail(trail);
-                        setEditDialogOpen(true);
-                      }}
-                    >
-                      <Edit className="w-3 h-3 mr-1" />
-                      Editar Trilha
-                    </Button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          setEditingTrail(trail);
+                          setEditDialogOpen(true);
+                        }}
+                      >
+                        <Edit className="w-3 h-3 mr-1" />
+                        Editar Info
+                      </Button>
+                      <Button 
+                        variant="default" 
+                        size="sm"
+                        onClick={() => {
+                          setManageContentTrail(trail);
+                          setManageContentOpen(true);
+                        }}
+                      >
+                        <Plus className="w-3 h-3 mr-1" />
+                        Gerenciar Conteúdo
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               );
@@ -142,11 +157,17 @@ export const AdminTrilhasPage = () => {
         </CardContent>
       </Card>
 
-      {/* Edit Dialog */}
+      {/* Dialogs */}
       <EditTrailDialog 
         trail={editingTrail}
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
+      />
+      
+      <ManageTrailContentDialog 
+        trail={manageContentTrail}
+        open={manageContentOpen}
+        onOpenChange={setManageContentOpen}
       />
     </div>
   );
