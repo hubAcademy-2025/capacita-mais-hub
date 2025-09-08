@@ -43,7 +43,7 @@ export const ProfessorEncontrosPage = () => {
         </div>
         <div className="flex gap-2">
           <Button asChild variant="outline">
-            <Link to="/professor/encontros/relatorios">
+            <Link to="/professor/relatorios/frequencia">
               <BarChart className="w-4 h-4 mr-2" />
               Relatórios
             </Link>

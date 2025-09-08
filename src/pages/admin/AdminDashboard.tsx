@@ -24,7 +24,7 @@ export const AdminDashboard = () => {
         </div>
         <div className="flex gap-2">
           <Button asChild variant="outline">
-            <Link to="/admin/encontros/relatorios">
+            <Link to="/admin/relatorios">
               <BarChart className="w-4 h-4 mr-2" />
               Relatórios
             </Link>
