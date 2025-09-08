@@ -18,12 +18,12 @@ export const useSupabaseAuth = () => {
   useEffect(() => {
     const fetchUserProfile = async (userId: string) => {
       try {
-        // Get user profile
+        // Get user profile - now only returns own profile due to RLS
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', userId)
-          .single();
+          .maybeSingle();
 
         if (profileError) {
           console.error('Error fetching profile:', profileError);
