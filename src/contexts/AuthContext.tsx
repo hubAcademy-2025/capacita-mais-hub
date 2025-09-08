@@ -46,7 +46,39 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       if (!profile) {
-        console.error('No profile found for user:', userId);
+        console.warn('No profile found for user:', userId);
+        // Create a basic profile if it doesn't exist
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const userName = user.email?.split('@')[0] || 'Usuário';
+          
+          // Try to create profile
+          const { error: insertError } = await supabase
+            .from('profiles')
+            .insert({
+              id: userId,
+              name: userName,
+              email: user.email || ''
+            });
+
+          if (!insertError) {
+            // Also create default role
+            await supabase
+              .from('user_roles')
+              .insert({
+                user_id: userId,
+                role: 'aluno'
+              });
+
+            return {
+              id: userId,
+              name: userName,
+              email: user.email || '',
+              role: 'aluno' as const,
+              avatar: ''
+            };
+          }
+        }
         return null;
       }
 
