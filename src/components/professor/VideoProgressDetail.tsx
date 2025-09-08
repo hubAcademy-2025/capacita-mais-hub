@@ -5,6 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { VideoPlayer } from '@/components/ui/video-player';
 import { 
   Play, 
   CheckCircle, 
@@ -14,7 +15,9 @@ import {
   Users,
   Video,
   FileText,
-  Award
+  Award,
+  ExternalLink,
+  PlayCircle
 } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import type { Trail, User, Content, UserProgress } from '@/types';
@@ -84,6 +87,54 @@ export const VideoProgressDetail = ({ trail, students, classId }: VideoProgressD
 
   return (
     <div className="space-y-6">
+      {/* Content Preview Section */}
+      {selectedContent && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <PlayCircle className="w-5 h-5" />
+              Preview: {selectedContent.title}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {selectedContent.type === 'video' && selectedContent.url ? (
+              <VideoPlayer 
+                url={selectedContent.url}
+                title={selectedContent.title}
+                duration={selectedContent.duration}
+                className="w-full max-w-2xl mx-auto"
+              />
+            ) : selectedContent.type === 'pdf' && selectedContent.url ? (
+              <div className="text-center p-6 border-2 border-dashed rounded-lg">
+                <FileText className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="font-medium mb-2">Documento PDF</h3>
+                <p className="text-sm text-muted-foreground mb-4">{selectedContent.title}</p>
+                <Button 
+                  onClick={() => window.open(selectedContent.url, '_blank')}
+                  className="mx-auto"
+                >
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  Abrir PDF
+                </Button>
+              </div>
+            ) : selectedContent.type === 'quiz' ? (
+              <div className="text-center p-6 border-2 border-dashed rounded-lg">
+                <Award className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="font-medium mb-2">Quiz Interativo</h3>
+                <p className="text-sm text-muted-foreground mb-4">{selectedContent.title}</p>
+                <Badge variant="outline">Conteúdo Interativo</Badge>
+              </div>
+            ) : (
+              <div className="text-center p-6 border-2 border-dashed rounded-lg">
+                <Play className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="font-medium mb-2">Conteúdo não disponível</h3>
+                <p className="text-sm text-muted-foreground">URL do conteúdo não configurada</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Content List */}
         <Card>
@@ -146,113 +197,186 @@ export const VideoProgressDetail = ({ trail, students, classId }: VideoProgressD
         {/* Content Details */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Eye className="w-5 h-5" />
-              {selectedContent ? `Detalhes: ${selectedContent.title}` : 'Selecione um conteúdo'}
+            <CardTitle>
+              <Tabs defaultValue="progress" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="progress" className="flex items-center gap-2">
+                    <BarChart3 className="w-4 h-4" />
+                    Progresso dos Alunos
+                  </TabsTrigger>
+                  <TabsTrigger value="preview" className="flex items-center gap-2">
+                    <Eye className="w-4 h-4" />
+                    Preview do Conteúdo
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="progress" className="mt-4">
+                  <div className="space-y-4">
+                    {selectedContent ? (
+                      <>
+                        {/* Content Overview */}
+                        <div className="p-4 bg-muted/50 rounded-lg">
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="p-2 bg-primary/10 rounded-md">
+                              {getContentIcon(selectedContent.type)}
+                            </div>
+                            <div>
+                              <h3 className="font-medium">{selectedContent.title}</h3>
+                              <p className="text-sm text-muted-foreground">
+                                {selectedContent.description || 'Sem descrição'}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          {selectedContent.type === 'video' && (
+                            <div className="flex items-center gap-4 text-sm">
+                              <Badge variant="outline">Vídeo</Badge>
+                              {selectedContent.duration && (
+                                <span className="text-muted-foreground">Duração: {selectedContent.duration}</span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Student Progress List */}
+                        <div className="space-y-3">
+                          <h4 className="font-medium">Progresso dos Alunos</h4>
+                          {getStudentVideoDetails(selectedContent.id).map(({ student, progress, completed, lastAccessed }) => (
+                            <div key={student.id} className="flex items-center justify-between p-3 border rounded-lg">
+                              <div className="flex items-center gap-3">
+                                <Avatar className="w-8 h-8">
+                                  <AvatarFallback className="text-xs">
+                                    {student.name.charAt(0)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div>
+                                  <p className="font-medium text-sm">{student.name}</p>
+                                  {lastAccessed && (
+                                    <p className="text-xs text-muted-foreground">
+                                      Último acesso: {new Date(lastAccessed).toLocaleDateString('pt-BR')}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="flex items-center gap-2 mb-1">
+                                  {completed ? (
+                                    <CheckCircle className="w-4 h-4 text-green-600" />
+                                  ) : progress > 0 ? (
+                                    <Clock className="w-4 h-4 text-yellow-600" />
+                                  ) : (
+                                    <div className="w-4 h-4 border-2 border-muted rounded-full" />
+                                  )}
+                                  <span className="text-sm font-medium">
+                                    {Math.round(progress)}%
+                                  </span>
+                                </div>
+                                <Progress value={progress} className="w-20 h-1" />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Statistics Summary */}
+                        {selectedContent.type === 'video' && (
+                          <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                            <h4 className="font-medium mb-3 text-blue-900 dark:text-blue-100">
+                              📊 Estatísticas do Vídeo
+                            </h4>
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div>
+                                <p className="text-muted-foreground">Alunos que iniciaram</p>
+                                <p className="font-medium">{getContentProgress(selectedContent.id).studentsStarted}/{students.length}</p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground">Alunos que concluíram</p>
+                                <p className="font-medium">{getContentProgress(selectedContent.id).studentsCompleted}/{students.length}</p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground">Progresso médio</p>
+                                <p className="font-medium">{Math.round(getContentProgress(selectedContent.id).averageProgress)}%</p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground">Taxa de conclusão</p>
+                                <p className="font-medium">
+                                  {Math.round((getContentProgress(selectedContent.id).studentsCompleted / students.length) * 100)}%
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <Eye className="w-12 h-12 mx-auto mb-4" />
+                        <h3 className="font-medium mb-2">Selecione um conteúdo</h3>
+                        <p className="text-sm">Clique em um conteúdo à esquerda para ver o progresso detalhado dos alunos</p>
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="preview" className="mt-4">
+                  {selectedContent ? (
+                    <div className="space-y-4">
+                      {selectedContent.type === 'video' && selectedContent.url ? (
+                        <div className="space-y-4">
+                          <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                              <PlayCircle className="w-5 h-5 text-green-600" />
+                              <h4 className="font-medium text-green-900 dark:text-green-100">Preview do Vídeo</h4>
+                            </div>
+                            <p className="text-sm text-green-700 dark:text-green-300">
+                              Este é o mesmo vídeo que seus alunos estão assistindo. Use para revisar o conteúdo.
+                            </p>
+                          </div>
+                          <VideoPlayer 
+                            url={selectedContent.url}
+                            title={selectedContent.title}
+                            duration={selectedContent.duration}
+                            className="w-full"
+                          />
+                        </div>
+                      ) : selectedContent.type === 'pdf' && selectedContent.url ? (
+                        <div className="text-center p-8 border-2 border-dashed rounded-lg">
+                          <FileText className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                          <h3 className="font-medium mb-2">Documento PDF</h3>
+                          <p className="text-sm text-muted-foreground mb-4">{selectedContent.title}</p>
+                          <Button 
+                            onClick={() => window.open(selectedContent.url, '_blank')}
+                            size="lg"
+                          >
+                            <ExternalLink className="w-4 h-4 mr-2" />
+                            Abrir PDF em Nova Aba
+                          </Button>
+                        </div>
+                      ) : selectedContent.type === 'quiz' ? (
+                        <div className="text-center p-8 border-2 border-dashed rounded-lg">
+                          <Award className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                          <h3 className="font-medium mb-2">Quiz Interativo</h3>
+                          <p className="text-sm text-muted-foreground mb-4">{selectedContent.title}</p>
+                          <Badge variant="outline" className="text-base px-4 py-2">Conteúdo Interativo</Badge>
+                        </div>
+                      ) : (
+                        <div className="text-center p-8 border-2 border-dashed rounded-lg">
+                          <Play className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                          <h3 className="font-medium mb-2">Conteúdo Indisponível</h3>
+                          <p className="text-sm text-muted-foreground">URL do conteúdo não foi configurada</p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <PlayCircle className="w-12 h-12 mx-auto mb-4" />
+                      <h3 className="font-medium mb-2">Selecione um conteúdo</h3>
+                      <p className="text-sm">Escolha um conteúdo à esquerda para ver o preview</p>
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {selectedContent ? (
-              <div className="space-y-4">
-                {/* Content Overview */}
-                <div className="p-4 bg-muted/50 rounded-lg">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="p-2 bg-primary/10 rounded-md">
-                      {getContentIcon(selectedContent.type)}
-                    </div>
-                    <div>
-                      <h3 className="font-medium">{selectedContent.title}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {selectedContent.description || 'Sem descrição'}
-                      </p>
-                    </div>
-                  </div>
-                  
-                  {selectedContent.type === 'video' && (
-                    <div className="flex items-center gap-4 text-sm">
-                      <Badge variant="outline">Vídeo</Badge>
-                      {selectedContent.duration && (
-                        <span className="text-muted-foreground">Duração: {selectedContent.duration}</span>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Student Progress List */}
-                <div className="space-y-3">
-                  <h4 className="font-medium">Progresso dos Alunos</h4>
-                  {getStudentVideoDetails(selectedContent.id).map(({ student, progress, completed, lastAccessed }) => (
-                    <div key={student.id} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="w-8 h-8">
-                          <AvatarFallback className="text-xs">
-                            {student.name.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium text-sm">{student.name}</p>
-                          {lastAccessed && (
-                            <p className="text-xs text-muted-foreground">
-                              Último acesso: {new Date(lastAccessed).toLocaleDateString('pt-BR')}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="flex items-center gap-2 mb-1">
-                          {completed ? (
-                            <CheckCircle className="w-4 h-4 text-green-600" />
-                          ) : progress > 0 ? (
-                            <Clock className="w-4 h-4 text-yellow-600" />
-                          ) : (
-                            <div className="w-4 h-4 border-2 border-muted rounded-full" />
-                          )}
-                          <span className="text-sm font-medium">
-                            {Math.round(progress)}%
-                          </span>
-                        </div>
-                        <Progress value={progress} className="w-20 h-1" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Statistics Summary */}
-                {selectedContent.type === 'video' && (
-                  <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-                    <h4 className="font-medium mb-3 text-blue-900 dark:text-blue-100">
-                      📊 Estatísticas do Vídeo
-                    </h4>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <p className="text-muted-foreground">Alunos que iniciaram</p>
-                        <p className="font-medium">{getContentProgress(selectedContent.id).studentsStarted}/{students.length}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Alunos que concluíram</p>
-                        <p className="font-medium">{getContentProgress(selectedContent.id).studentsCompleted}/{students.length}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Progresso médio</p>
-                        <p className="font-medium">{Math.round(getContentProgress(selectedContent.id).averageProgress)}%</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Taxa de conclusão</p>
-                        <p className="font-medium">
-                          {Math.round((getContentProgress(selectedContent.id).studentsCompleted / students.length) * 100)}%
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <Eye className="w-12 h-12 mx-auto mb-4" />
-                <h3 className="font-medium mb-2">Selecione um conteúdo</h3>
-                <p className="text-sm">Clique em um conteúdo à esquerda para ver o progresso detalhado dos alunos</p>
-              </div>
-            )}
           </CardContent>
         </Card>
       </div>
