@@ -36,12 +36,13 @@ export const ProfessorEncontrosPage = () => {
 
   console.log('=== PROFESSOR ENCONTROS DEBUG ===');
   console.log('User Profile:', userProfile);
-  console.log('All meetings:', meetings);
+  console.log('All meetings from hook:', meetings);
   console.log('Professor classes:', professorClasses);
   console.log('Professor class IDs:', professorClassIds);
-  console.log('Professor meetings:', professorMeetings);
+  console.log('Professor meetings (filtered):', professorMeetings);
   console.log('Upcoming meetings:', upcomingMeetings);
   console.log('Past meetings:', pastMeetings);
+  console.log('Current time:', now.toISOString());
 
   const getClassInfo = (classId: string) => {
     const classroom = professorClasses.find(c => c.id === classId);

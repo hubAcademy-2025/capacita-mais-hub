@@ -32,12 +32,14 @@ export const AlunoEncontrosPage = () => {
 
   console.log('=== ALUNO ENCONTROS DEBUG ===');
   console.log('User Profile:', userProfile);
-  console.log('All meetings:', meetings);
+  console.log('All meetings from hook:', meetings);
   console.log('Student enrollments:', studentEnrollments);
   console.log('Student class IDs:', studentClassIds);
-  console.log('Student meetings:', studentMeetings);
+  console.log('Student classes:', studentClasses);
+  console.log('Student meetings (filtered):', studentMeetings);
   console.log('Upcoming meetings:', upcomingMeetings);
   console.log('Past meetings:', pastMeetings);
+  console.log('Current time:', now.toISOString());
 
   const getClassInfo = (classId: string) => {
     const classroom = studentClasses.find(c => c.id === classId);

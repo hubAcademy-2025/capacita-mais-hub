@@ -46,6 +46,10 @@ export const useMeetings = () => {
         `)
         .order('date_time', { ascending: true });
 
+      console.log('=== MEETINGS FETCH DEBUG ===');
+      console.log('Raw meetings data:', data);
+      console.log('Meeting error:', meetingError);
+
       if (meetingError) throw meetingError;
 
       const meetingsWithClass = data?.map(meeting => ({
@@ -53,6 +57,7 @@ export const useMeetings = () => {
         class: meeting.classes
       })) || [];
 
+      console.log('Processed meetings:', meetingsWithClass);
       setMeetings(meetingsWithClass);
     } catch (err) {
       console.error('Error fetching meetings:', err);
