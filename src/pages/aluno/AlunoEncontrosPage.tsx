@@ -18,13 +18,18 @@ export const AlunoEncontrosPage = () => {
 
   if (!userProfile) return null;
 
-  // Get student's enrollments and classes
-  const studentEnrollments = enrollments.filter(e => e.student_id === userProfile.id);
+  // Get student's enrollments and classes (admin can see all)
+  const studentEnrollments = userProfile?.roles?.includes('admin') 
+    ? enrollments
+    : enrollments.filter(e => e.student_id === userProfile?.id);
+    
   const studentClassIds = studentEnrollments.map(e => e.class_id);
   const studentClasses = classes.filter(c => studentClassIds.includes(c.id));
   
-  // Filter meetings for student's classes
-  const studentMeetings = meetings.filter(m => studentClassIds.includes(m.class_id));
+  // Filter meetings for student's classes or show all if admin
+  const studentMeetings = userProfile?.roles?.includes('admin')
+    ? meetings
+    : meetings.filter(m => studentClassIds.includes(m.class_id));
 
   const now = new Date();
   const upcomingMeetings = studentMeetings.filter(m => new Date(m.date_time) > now);
@@ -32,11 +37,22 @@ export const AlunoEncontrosPage = () => {
 
   console.log('=== ALUNO ENCONTROS DEBUG ===');
   console.log('User Profile:', userProfile);
+  console.log('User Profile ID:', userProfile?.id);
+  console.log('User Profile roles:', userProfile?.roles);
+  console.log('Is admin?', userProfile?.roles?.includes('admin'));
   console.log('All meetings from hook:', meetings);
+  console.log('All enrollments:', enrollments);
   console.log('Student enrollments:', studentEnrollments);
   console.log('Student class IDs:', studentClassIds);
   console.log('Student classes:', studentClasses);
   console.log('Student meetings (filtered):', studentMeetings);
+  console.log('Meetings details:', meetings.map(m => ({ 
+    id: m.id, 
+    class_id: m.class_id, 
+    title: m.title, 
+    host_user_id: m.host_user_id,
+    date_time: m.date_time
+  })));
   console.log('Upcoming meetings:', upcomingMeetings);
   console.log('Past meetings:', pastMeetings);
   console.log('Current time:', now.toISOString());
