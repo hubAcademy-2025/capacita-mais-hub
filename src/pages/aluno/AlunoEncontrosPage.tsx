@@ -30,13 +30,14 @@ export const AlunoEncontrosPage = () => {
   const upcomingMeetings = studentMeetings.filter(m => new Date(m.date_time) > now);
   const pastMeetings = studentMeetings.filter(m => new Date(m.date_time) <= now);
 
-  console.log('Student meetings data:', { 
-    studentMeetings, 
-    upcomingMeetings, 
-    pastMeetings, 
-    studentClassIds,
-    userProfile: userProfile?.id 
-  });
+  console.log('=== ALUNO ENCONTROS DEBUG ===');
+  console.log('User Profile:', userProfile);
+  console.log('All meetings:', meetings);
+  console.log('Student enrollments:', studentEnrollments);
+  console.log('Student class IDs:', studentClassIds);
+  console.log('Student meetings:', studentMeetings);
+  console.log('Upcoming meetings:', upcomingMeetings);
+  console.log('Past meetings:', pastMeetings);
 
   const getClassInfo = (classId: string) => {
     const classroom = studentClasses.find(c => c.id === classId);
