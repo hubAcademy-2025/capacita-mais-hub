@@ -1,28 +1,18 @@
-import { Building, Users, BookOpen, BarChart3 } from 'lucide-react';
+import { Building, Users, BookOpen } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { StatsCard } from '@/components/ui/stats-card';
-import { useAppStore } from '@/store/useAppStore';
 import { useNavigate } from 'react-router-dom';
 import { CreateClassDialog } from '@/components/admin/CreateClassDialog';
 import { ManageClassDialog } from '@/components/admin/ManageClassDialog';
+import { useClasses } from '@/hooks/useClasses';
+import { useTrails } from '@/hooks/useTrails';
 
 export const AdminTurmasPage = () => {
-  const { classes, users, trails } = useAppStore();
+  const { classes, loading, getClassStats } = useClasses();
+  const { trails } = useTrails();
   const navigate = useNavigate();
-
-  const getClassStats = () => {
-    const activeClasses = classes.filter(c => c.status === 'active').length;
-    const totalStudents = classes.reduce((acc, c) => acc + c.studentIds.length, 0);
-    // Update to handle multiple professors per class
-    const allProfessorIds = classes.flatMap(c => c.professorIds || 
-      // @ts-ignore - backward compatibility
-      [c.professorId]).filter(Boolean);
-    const totalProfessors = new Set(allProfessorIds).size;
-    
-    return { activeClasses, totalStudents, totalProfessors };
-  };
 
   const { activeClasses, totalStudents, totalProfessors } = getClassStats();
 
@@ -66,20 +56,15 @@ export const AdminTurmasPage = () => {
           <CardTitle>Todas as Turmas</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {classes.map((classroom) => {
-              // Handle both old and new data structure
-              const professorIds = classroom.professorIds || 
-                // @ts-ignore - backward compatibility
-                [classroom.professorId].filter(Boolean);
-              const trailIds = classroom.trailIds || 
-                // @ts-ignore - backward compatibility
-                [classroom.trailId].filter(Boolean);
-              
-              const professors = users.filter(u => professorIds.includes(u.id));
-              const classTrails = trails.filter(t => trailIds.includes(t.id));
-              
-              return (
+          {loading ? (
+            <div className="text-center py-8">Carregando turmas...</div>
+          ) : classes.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              Nenhuma turma criada ainda. Crie sua primeira turma!
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {classes.map((classroom) => (
                 <div key={classroom.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-primary-light rounded-lg flex items-center justify-center">
@@ -88,19 +73,19 @@ export const AdminTurmasPage = () => {
                     <div>
                       <h3 className="font-medium">{classroom.name}</h3>
                       <p className="text-sm text-muted-foreground">
-                        Professores: {professors.length > 0 ? professors.map(p => p.name).join(', ') : 'Nenhum professor'}
+                        Professores: {classroom.professors.length > 0 ? classroom.professors.map(p => p.name).join(', ') : 'Nenhum professor'}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        Trilhas: {classTrails.length > 0 ? `${classTrails.length} trilha(s)` : 'Nenhuma trilha'}
+                        Trilhas: {classroom.trails.length > 0 ? classroom.trails.map(t => t.title).join(', ') : 'Nenhuma trilha'}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Criada em: {new Date(classroom.createdAt).toLocaleDateString('pt-BR')}
+                        Criada em: {new Date(classroom.created_at).toLocaleDateString('pt-BR')}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-right">
-                      <p className="text-sm font-medium">{classroom.studentIds.length} alunos</p>
+                      <p className="text-sm font-medium">{classroom.student_count} alunos</p>
                       <Badge variant={classroom.status === 'active' ? 'default' : 'secondary'}>
                         {classroom.status === 'active' ? 'Ativa' : 'Inativa'}
                       </Badge>
@@ -113,13 +98,12 @@ export const AdminTurmasPage = () => {
                       >
                         Ver Detalhes
                       </Button>
-                      <ManageClassDialog classroom={classroom} />
                     </div>
                   </div>
                 </div>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

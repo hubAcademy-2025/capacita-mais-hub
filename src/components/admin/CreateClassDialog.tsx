@@ -18,10 +18,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { useAppStore } from '@/store/useAppStore';
+import { useUsers } from '@/hooks/useUsers';
+import { useTrails } from '@/hooks/useTrails';
+import { useClasses } from '@/hooks/useClasses';
 
 export const CreateClassDialog = () => {
-  const { users, trails, addClass } = useAppStore();
+  const { getUsersByRole, loading: usersLoading } = useUsers();
+  const { getTrailOptions, loading: trailsLoading } = useTrails();
+  const { createClass, loading: classLoading } = useClasses();
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -30,24 +34,19 @@ export const CreateClassDialog = () => {
     trailId: '',
   });
 
-  const professors = users.filter(u => u.role === 'professor');
+  const professors = getUsersByRole('professor');
+  const trails = getTrailOptions();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const newClass = {
-      id: `class_${Date.now()}`,
-      name: formData.name,
-      professorIds: [formData.professorId],
-      trailIds: [formData.trailId],
-      studentIds: [],
-      status: 'active' as const,
-      createdAt: new Date().toISOString(),
-    };
-
-    addClass(newClass);
-    setOpen(false);
-    setFormData({ name: '', description: '', professorId: '', trailId: '' });
+    try {
+      await createClass(formData.name, formData.professorId, formData.trailId);
+      setOpen(false);
+      setFormData({ name: '', description: '', professorId: '', trailId: '' });
+    } catch (error) {
+      // Error already handled in createClass
+    }
   };
 
   return (
@@ -126,8 +125,11 @@ export const CreateClassDialog = () => {
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancelar
             </Button>
-            <Button type="submit">
-              Criar Turma
+            <Button 
+              type="submit" 
+              disabled={usersLoading || trailsLoading || classLoading}
+            >
+              {classLoading ? 'Criando...' : 'Criar Turma'}
             </Button>
           </div>
         </form>

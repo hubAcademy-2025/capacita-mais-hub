@@ -7,69 +7,53 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Plus } from 'lucide-react';
-import { useAppStore } from '@/store/useAppStore';
-import { useToast } from '@/hooks/use-toast';
-import type { Trail } from '@/types';
+import { useTrails } from '@/hooks/useTrails';
 
 interface CreateTrailDialogProps {
   trigger?: React.ReactNode;
 }
 
 export const CreateTrailDialog = ({ trigger }: CreateTrailDialogProps) => {
+  const { createTrail, loading } = useTrails();
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     duration: '',
-    level: '' as 'Iniciante' | 'Intermediário' | 'Avançado' | '',
+    level: '',
     certificateEnabled: false,
-    certificateType: 'trail' as 'trail' | 'module' | 'both',
+    certificateType: 'trail',
   });
-  const { addTrail } = useAppStore();
-  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.title || !formData.description || !formData.duration || !formData.level) {
-      toast({
-        title: "Erro",
-        description: "Preencha todos os campos obrigatórios",
-        variant: "destructive"
-      });
+    if (!formData.title.trim()) {
       return;
     }
 
-    const newTrail: Trail = {
-      id: crypto.randomUUID(),
-      title: formData.title,
-      description: formData.description,
-      duration: formData.duration,
-      level: formData.level as 'Iniciante' | 'Intermediário' | 'Avançado',
-      modules: [],
-      certificateConfig: {
-        enabled: formData.certificateEnabled,
-        type: formData.certificateType,
-      },
-      isBlocked: false,
-    };
+    try {
+      await createTrail({
+        title: formData.title,
+        description: formData.description || undefined,
+        level: formData.level,
+        duration: formData.duration || undefined,
+        certificate_enabled: formData.certificateEnabled,
+        certificate_type: formData.certificateType,
+      });
 
-    addTrail(newTrail);
-    
-    toast({
-      title: "Sucesso",
-      description: "Trilha criada com sucesso",
-    });
-
-    setFormData({
-      title: '',
-      description: '',
-      duration: '',
-      level: '',
-      certificateEnabled: false,
-      certificateType: 'trail',
-    });
-    setOpen(false);
+      setFormData({
+        title: '',
+        description: '',
+        duration: '',
+        level: '',
+        certificateEnabled: false,
+        certificateType: 'trail',
+      });
+      setOpen(false);
+    } catch (error) {
+      // Error already handled in createTrail
+    }
   };
 
   return (
@@ -126,7 +110,7 @@ export const CreateTrailDialog = ({ trigger }: CreateTrailDialogProps) => {
               <Label htmlFor="level">Nível *</Label>
               <Select
                 value={formData.level}
-                onValueChange={(value: 'Iniciante' | 'Intermediário' | 'Avançado') => 
+                onValueChange={(value) => 
                   setFormData(prev => ({ ...prev, level: value }))
                 }
               >
@@ -134,9 +118,9 @@ export const CreateTrailDialog = ({ trigger }: CreateTrailDialogProps) => {
                   <SelectValue placeholder="Selecione o nível" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Iniciante">Iniciante</SelectItem>
-                  <SelectItem value="Intermediário">Intermediário</SelectItem>
-                  <SelectItem value="Avançado">Avançado</SelectItem>
+                  <SelectItem value="beginner">Iniciante</SelectItem>
+                  <SelectItem value="intermediate">Intermediário</SelectItem>
+                  <SelectItem value="advanced">Avançado</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -164,7 +148,7 @@ export const CreateTrailDialog = ({ trigger }: CreateTrailDialogProps) => {
                 <Label htmlFor="certificate-type">Tipo de Certificado</Label>
                 <Select
                   value={formData.certificateType}
-                  onValueChange={(value: 'trail' | 'module' | 'both') => 
+                  onValueChange={(value) => 
                     setFormData(prev => ({ ...prev, certificateType: value }))
                   }
                 >
@@ -185,8 +169,8 @@ export const CreateTrailDialog = ({ trigger }: CreateTrailDialogProps) => {
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancelar
             </Button>
-            <Button type="submit">
-              Criar Trilha
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Criando...' : 'Criar Trilha'}
             </Button>
           </div>
         </form>

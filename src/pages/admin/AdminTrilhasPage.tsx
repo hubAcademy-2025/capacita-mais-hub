@@ -4,28 +4,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { StatsCard } from '@/components/ui/stats-card';
-import { useAppStore } from '@/store/useAppStore';
 import { CreateTrailDialog } from '@/components/admin/CreateTrailDialog';
 import { EditTrailDialog } from '@/components/admin/EditTrailDialog';
 import { ManageTrailContentDialog } from '@/components/admin/ManageTrailContentDialog';
-import type { Trail } from '@/types';
+import { useTrails } from '@/hooks/useTrails';
+import type { TrailWithDetails } from '@/hooks/useTrails';
 
 export const AdminTrilhasPage = () => {
-  const { trails, classes } = useAppStore();
-  const [editingTrail, setEditingTrail] = useState<Trail | null>(null);
+  const { trails, loading, getTrailStats } = useTrails();
+  const [editingTrail, setEditingTrail] = useState<TrailWithDetails | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [manageContentTrail, setManageContentTrail] = useState<Trail | null>(null);
+  const [manageContentTrail, setManageContentTrail] = useState<TrailWithDetails | null>(null);
   const [manageContentOpen, setManageContentOpen] = useState(false);
-
-  const getTrailStats = () => {
-    const totalModules = trails.reduce((acc, t) => acc + t.modules.length, 0);
-    const totalContent = trails.reduce((acc, t) => 
-      acc + t.modules.reduce((modAcc, m) => modAcc + m.content.length, 0), 0
-    );
-    const activeTrails = trails.filter(t => !t.isBlocked).length;
-    
-    return { totalModules, totalContent, activeTrails };
-  };
 
   const { totalModules, totalContent, activeTrails } = getTrailStats();
 
@@ -57,8 +47,8 @@ export const AdminTrilhasPage = () => {
           icon={Clock}
         />
         <StatsCard
-          title="Em Uso"
-          value={classes.length}
+          title="Total de Trilhas"
+          value={trails.length}
           icon={Users}
         />
       </div>
@@ -69,58 +59,60 @@ export const AdminTrilhasPage = () => {
           <CardTitle>Todas as Trilhas</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {trails.map((trail) => {
-              const usedInClasses = classes.filter(c => c.trailId === trail.id).length;
-              const totalContent = trail.modules.reduce((acc, m) => acc + m.content.length, 0);
-              
-              return (
+          {loading ? (
+            <div className="text-center py-8">Carregando trilhas...</div>
+          ) : trails.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              Nenhuma trilha criada ainda. Crie sua primeira trilha!
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {trails.map((trail) => (
                 <Card key={trail.id} className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div>
                         <CardTitle className="text-lg">{trail.title}</CardTitle>
                         <Badge variant="outline" className="mt-2">
-                          {trail.level}
+                          {trail.level === 'beginner' ? 'Iniciante' : 
+                           trail.level === 'intermediate' ? 'Intermediário' : 'Avançado'}
                         </Badge>
                       </div>
-                      <Badge variant={trail.isBlocked ? 'destructive' : 'default'}>
-                        {trail.isBlocked ? 'Bloqueada' : 'Ativa'}
-                      </Badge>
+                      <Badge variant="default">Ativa</Badge>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <p className="text-sm text-muted-foreground">{trail.description}</p>
+                    <p className="text-sm text-muted-foreground">{trail.description || 'Sem descrição'}</p>
                     
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span>Módulos:</span>
-                        <span className="font-medium">{trail.modules.length}</span>
+                        <span className="font-medium">{trail.module_count}</span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span>Conteúdos:</span>
-                        <span className="font-medium">{totalContent}</span>
+                        <span className="font-medium">{trail.content_count}</span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span>Duração:</span>
-                        <span className="font-medium">{trail.duration}</span>
+                        <span className="font-medium">{trail.duration || 'Não definida'}</span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span>Usado em:</span>
-                        <span className="font-medium">{usedInClasses} turmas</span>
+                        <span className="font-medium">{trail.class_count} turmas</span>
                       </div>
                     </div>
 
                     <div className="space-y-2">
                       <div className="flex justify-between text-xs">
                         <span>Certificado:</span>
-                        <Badge variant={trail.certificateConfig.enabled ? 'default' : 'secondary'} className="text-xs">
-                          {trail.certificateConfig.enabled ? 'Habilitado' : 'Desabilitado'}
+                        <Badge variant={trail.certificate_enabled ? 'default' : 'secondary'} className="text-xs">
+                          {trail.certificate_enabled ? 'Habilitado' : 'Desabilitado'}
                         </Badge>
                       </div>
-                      {trail.certificateConfig.enabled && (
+                      {trail.certificate_enabled && (
                         <div className="text-xs text-muted-foreground">
-                          Tipo: {trail.certificateConfig.type}
+                          Tipo: {trail.certificate_type}
                         </div>
                       )}
                     </div>
@@ -129,10 +121,7 @@ export const AdminTrilhasPage = () => {
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => {
-                          setEditingTrail(trail);
-                          setEditDialogOpen(true);
-                        }}
+                        disabled
                       >
                         <Edit className="w-3 h-3 mr-1" />
                         Editar Info
@@ -140,10 +129,7 @@ export const AdminTrilhasPage = () => {
                       <Button 
                         variant="default" 
                         size="sm"
-                        onClick={() => {
-                          setManageContentTrail(trail);
-                          setManageContentOpen(true);
-                        }}
+                        disabled
                       >
                         <Plus className="w-3 h-3 mr-1" />
                         Gerenciar Conteúdo
@@ -151,24 +137,13 @@ export const AdminTrilhasPage = () => {
                     </div>
                   </CardContent>
                 </Card>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Dialogs */}
-      <EditTrailDialog 
-        trail={editingTrail}
-        open={editDialogOpen}
-        onOpenChange={setEditDialogOpen}
-      />
-      
-      <ManageTrailContentDialog 
-        trail={manageContentTrail}
-        open={manageContentOpen}
-        onOpenChange={setManageContentOpen}
-      />
+      {/* Dialogs temporarily disabled - will be updated to work with real data */}
     </div>
   );
 };
