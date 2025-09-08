@@ -4,10 +4,10 @@ import { Header } from './Header';
 import { useAppStore } from '@/store/useAppStore';
 
 interface LayoutProps {
-  title: string;
+  children?: React.ReactNode;
 }
 
-export const Layout = ({ title }: LayoutProps) => {
+export const Layout = ({ children }: LayoutProps) => {
   const { sidebarCollapsed } = useAppStore();
 
   return (
@@ -15,12 +15,12 @@ export const Layout = ({ title }: LayoutProps) => {
       <Sidebar />
       
       <div className="flex-1 flex flex-col">
-        <Header title={title} />
+        <Header title="Sistema de Ensino" />
         
         <main className={`flex-1 transition-all duration-300 ease-in-out ${
           sidebarCollapsed ? 'ml-16' : 'ml-64'
         } overflow-x-auto`}>
-          <Outlet />
+          {children || <div>Dashboard</div>}
         </main>
       </div>
     </div>
