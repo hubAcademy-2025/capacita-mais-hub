@@ -99,6 +99,11 @@ export const useClasses = () => {
         };
       }) || [];
 
+      console.log('=== CLASSES DEBUG ===');
+      console.log('Raw classes data:', classes);
+      console.log('Class professors data:', classProfessors);
+      console.log('Classes with details:', classesWithDetails);
+
       setClasses(classesWithDetails);
     } catch (err) {
       console.error('Error fetching classes:', err);

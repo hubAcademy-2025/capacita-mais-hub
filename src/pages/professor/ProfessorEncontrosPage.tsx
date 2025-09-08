@@ -36,10 +36,14 @@ export const ProfessorEncontrosPage = () => {
 
   console.log('=== PROFESSOR ENCONTROS DEBUG ===');
   console.log('User Profile:', userProfile);
+  console.log('User Profile ID:', userProfile?.id);
+  console.log('User Profile roles:', userProfile?.roles);
   console.log('All meetings from hook:', meetings);
+  console.log('All classes:', classes);
   console.log('Professor classes:', professorClasses);
   console.log('Professor class IDs:', professorClassIds);
   console.log('Professor meetings (filtered):', professorMeetings);
+  console.log('Meetings class_ids:', meetings.map(m => ({ id: m.id, class_id: m.class_id, title: m.title })));
   console.log('Upcoming meetings:', upcomingMeetings);
   console.log('Past meetings:', pastMeetings);
   console.log('Current time:', now.toISOString());

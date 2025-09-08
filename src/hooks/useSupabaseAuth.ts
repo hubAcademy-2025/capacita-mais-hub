@@ -43,6 +43,11 @@ export const useSupabaseAuth = () => {
 
         const roles = userRoles?.map(r => r.role) || [];
 
+        console.log('=== USER PROFILE DEBUG ===');
+        console.log('Profile data:', profile);
+        console.log('User roles data:', userRoles);
+        console.log('Extracted roles:', roles);
+
         return {
           id: profile.id,
           name: profile.name,
