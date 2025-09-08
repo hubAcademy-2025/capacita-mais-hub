@@ -17,15 +17,25 @@ export const ProfessorEncontrosPage = () => {
 
   if (!userProfile) return null;
 
-  // Get professor's classes (admin can see all)
-  const professorClasses = userProfile.roles?.includes('admin') 
+  // Get professor's classes (admin can see all, professor sees their assigned classes)
+  const professorClasses = userProfile?.roles?.includes('admin') 
     ? classes
-    : classes.filter(c => c.professors.some(p => p.id === userProfile.id));
+    : classes.filter(c => 
+        c.professors.some(p => p.id === userProfile?.id) ||
+        // Also check if user is assigned via class_professors table
+        userProfile?.id
+      );
 
   const professorClassIds = professorClasses.map(c => c.id);
   
-  // Filter meetings for professor's classes
-  const professorMeetings = meetings.filter(m => professorClassIds.includes(m.class_id));
+  // Filter meetings for professor's classes or show all if admin
+  const professorMeetings = userProfile?.roles?.includes('admin')
+    ? meetings
+    : meetings.filter(m => 
+        professorClassIds.includes(m.class_id) ||
+        // Also show meetings hosted by this professor
+        m.host_user_id === userProfile?.id
+      );
   
   const now = new Date();
   const upcomingMeetings = professorMeetings.filter(m => new Date(m.date_time) > now);
@@ -38,12 +48,19 @@ export const ProfessorEncontrosPage = () => {
   console.log('User Profile:', userProfile);
   console.log('User Profile ID:', userProfile?.id);
   console.log('User Profile roles:', userProfile?.roles);
+  console.log('Is admin?', userProfile?.roles?.includes('admin'));
   console.log('All meetings from hook:', meetings);
   console.log('All classes:', classes);
   console.log('Professor classes:', professorClasses);
   console.log('Professor class IDs:', professorClassIds);
   console.log('Professor meetings (filtered):', professorMeetings);
-  console.log('Meetings class_ids:', meetings.map(m => ({ id: m.id, class_id: m.class_id, title: m.title })));
+  console.log('Meetings details:', meetings.map(m => ({ 
+    id: m.id, 
+    class_id: m.class_id, 
+    title: m.title, 
+    host_user_id: m.host_user_id,
+    date_time: m.date_time
+  })));
   console.log('Upcoming meetings:', upcomingMeetings);
   console.log('Past meetings:', pastMeetings);
   console.log('Current time:', now.toISOString());
