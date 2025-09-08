@@ -30,6 +30,14 @@ export const AlunoEncontrosPage = () => {
   const upcomingMeetings = studentMeetings.filter(m => new Date(m.date_time) > now);
   const pastMeetings = studentMeetings.filter(m => new Date(m.date_time) <= now);
 
+  console.log('Student meetings data:', { 
+    studentMeetings, 
+    upcomingMeetings, 
+    pastMeetings, 
+    studentClassIds,
+    userProfile: userProfile?.id 
+  });
+
   const getClassInfo = (classId: string) => {
     const classroom = studentClasses.find(c => c.id === classId);
     const professor = classroom?.professors[0]; // Get first professor

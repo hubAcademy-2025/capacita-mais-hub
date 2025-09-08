@@ -34,6 +34,14 @@ export const ProfessorEncontrosPage = () => {
   // Calculate total duration
   const totalDuration = professorMeetings.reduce((sum, meeting) => sum + (meeting.duration || 0), 0);
 
+  console.log('Professor meetings data:', { 
+    professorMeetings, 
+    upcomingMeetings, 
+    pastMeetings, 
+    professorClassIds,
+    userProfile: userProfile?.id 
+  });
+
   const getClassInfo = (classId: string) => {
     const classroom = professorClasses.find(c => c.id === classId);
     return { classroom };
