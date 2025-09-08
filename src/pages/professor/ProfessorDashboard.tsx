@@ -4,38 +4,31 @@ import { StatsCard } from '@/components/ui/stats-card';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useAppStore } from '@/store/useAppStore';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
+import { useClasses } from '@/hooks/useClasses';
+import { useEnrollments } from '@/hooks/useEnrollments';
 
 export const ProfessorDashboard = () => {
   const navigate = useNavigate();
-  const { 
-    currentUser, 
-    classes,
-    users, 
-    trails, 
-    enrollments, 
-    meetings 
-  } = useAppStore();
+  const { userProfile } = useSupabaseAuth();
+  const { classes } = useClasses();
+  const { enrollments } = useEnrollments();
   
-  if (!currentUser) return null;
+  if (!userProfile) return null;
 
+  // Get professor's classes - classes where the professor is assigned
   const myClasses = classes.filter(c => 
-    (c.professorIds && c.professorIds.includes(currentUser.id)) || 
-    // @ts-ignore - backward compatibility
-    c.professorId === currentUser.id
+    c.professors.some(p => p.id === userProfile.id)
   );
-  const totalStudents = myClasses.reduce((acc, c) => acc + c.studentIds.length, 0);
   
-  const upcomingMeetings = myClasses.flatMap(c => 
-    meetings.filter(m => 
-      m.classId === c.id &&
-      new Date(m.dateTime) > new Date() && 
-      m.status === 'scheduled'
-    )
-  ).slice(0, 3);
+  // Calculate total students across all professor's classes
+  const totalStudents = myClasses.reduce((acc, c) => acc + c.student_count, 0);
+  
+  // Placeholder for upcoming meetings (to be implemented with meetings data)
+  const upcomingMeetings: any[] = [];
 
   const calculateAvgProgress = (classId: string) => {
-    const classEnrollments = enrollments.filter(e => e.classId === classId);
+    const classEnrollments = enrollments.filter(e => e.class_id === classId);
     if (classEnrollments.length === 0) return 0;
     return Math.round(classEnrollments.reduce((acc, e) => acc + e.progress, 0) / classEnrollments.length);
   };
@@ -74,11 +67,7 @@ export const ProfessorDashboard = () => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {myClasses.map((classItem) => {
-          const trail = trails.find(t => 
-            classItem.trailIds?.includes(t.id) || 
-            // @ts-ignore - backward compatibility
-            classItem.trailId === t.id
-          );
+              const trail = classItem.trails[0]; // Get first trail
               const avgProgress = calculateAvgProgress(classItem.id);
               
               return (
@@ -96,7 +85,7 @@ export const ProfessorDashboard = () => {
                       
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-muted-foreground">
-                          {classItem.studentIds.length} alunos
+                          {classItem.student_count} alunos
                         </span>
                         <span className="font-medium text-primary">
                           {avgProgress}% progresso médio
@@ -135,38 +124,23 @@ export const ProfessorDashboard = () => {
         <CardContent>
           <div className="space-y-4">
             {upcomingMeetings.length > 0 ? (
-              upcomingMeetings.map((meeting) => {
-                const classItem = myClasses.find(c => c.id === meeting.classId);
-                
-                return (
-                  <div key={meeting.id} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-primary-light rounded-lg flex items-center justify-center">
-                        <Calendar className="w-5 h-5 text-primary" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-foreground">{meeting.title}</p>
-                        <p className="text-sm text-muted-foreground">{classItem?.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(meeting.dateTime).toLocaleDateString('pt-BR')} às{' '}
-                          {new Date(meeting.dateTime).toLocaleTimeString('pt-BR', { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
-                          })}
-                        </p>
-                      </div>
+              upcomingMeetings.map((meeting) => (
+                <div key={meeting.id} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-primary-light rounded-lg flex items-center justify-center">
+                      <Calendar className="w-5 h-5 text-primary" />
                     </div>
-                    
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => navigate(`/professor/turmas/${meeting.classId}`)}
-                    >
-                      Ver Turma
-                    </Button>
+                    <div>
+                      <p className="font-medium text-foreground">Reunião agendada</p>
+                      <p className="text-sm text-muted-foreground">Em breve</p>
+                    </div>
                   </div>
-                );
-              })
+                  
+                  <Button variant="outline" size="sm">
+                    Ver Detalhes
+                  </Button>
+                </div>
+              ))
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 <Calendar className="w-12 h-12 mx-auto mb-4" />

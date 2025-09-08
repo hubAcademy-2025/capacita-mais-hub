@@ -4,34 +4,30 @@ import { Calendar, Users, Clock, Video, Plus, BarChart } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useAppStore } from '@/store/useAppStore';
 import { CreateMeetingDialog } from '@/components/professor/CreateMeetingDialog';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
+import { useClasses } from '@/hooks/useClasses';
 
 export const ProfessorEncontrosPage = () => {
   const navigate = useNavigate();
-  const { currentUser, classes, meetings, users } = useAppStore();
+  const { userProfile } = useSupabaseAuth();
+  const { classes } = useClasses();
 
-  if (!currentUser) return null;
+  if (!userProfile) return null;
 
+  // Get professor's classes
   const professorClasses = classes.filter(c => 
-    (c.professorIds && c.professorIds.includes(currentUser.id)) || 
-    // @ts-ignore - backward compatibility
-    c.professorId === currentUser.id
+    c.professors.some(p => p.id === userProfile.id)
   );
-  const professorMeetings = meetings.filter(m => 
-    professorClasses.some(c => c.id === m.classId)
-  ).sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime());
-
-  const upcomingMeetings = professorMeetings.filter(m => 
-    new Date(m.dateTime) > new Date() && m.status === 'scheduled'
-  );
-
-  const pastMeetings = professorMeetings.filter(m => 
-    new Date(m.dateTime) <= new Date() || m.status === 'completed'
-  );
+  
+  // Placeholder for meetings data (to be implemented with meetings data)
+  const allMeetings: any[] = [];
+  const upcomingMeetings: any[] = [];
+  const pastMeetings: any[] = [];
 
   const getClassInfo = (classId: string) => {
-    return professorClasses.find(c => c.id === classId);
+    const classroom = professorClasses.find(c => c.id === classId);
+    return { classroom };
   };
 
   return (
@@ -98,9 +94,7 @@ export const ProfessorEncontrosPage = () => {
             <Video className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {professorMeetings.reduce((acc, m) => acc + m.duration, 0)}
-            </div>
+            <div className="text-2xl font-bold">0</div>
             <p className="text-xs text-muted-foreground">Minutos de encontros</p>
           </CardContent>
         </Card>
@@ -116,55 +110,6 @@ export const ProfessorEncontrosPage = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {upcomingMeetings.map((meeting) => {
-              const classInfo = getClassInfo(meeting.classId);
-              const isToday = new Date(meeting.dateTime).toDateString() === new Date().toDateString();
-              
-              return (
-                <div key={meeting.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-primary-light rounded-lg flex items-center justify-center">
-                      <Video className="w-6 h-6 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium">{meeting.title}</h3>
-                      <p className="text-sm text-muted-foreground">{classInfo?.name}</p>
-                      <div className="flex items-center gap-4 mt-1">
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Calendar className="w-3 h-3" />
-                          {new Date(meeting.dateTime).toLocaleDateString('pt-BR')}
-                        </div>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Clock className="w-3 h-3" />
-                          {new Date(meeting.dateTime).toLocaleTimeString('pt-BR', { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
-                          })} ({meeting.duration}min)
-                        </div>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Users className="w-3 h-3" />
-                          {classInfo?.studentIds.length} alunos
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {isToday && (
-                      <Badge variant="destructive" className="mr-2">Hoje</Badge>
-                    )}
-                    <Button 
-                      size="sm"
-                      variant={isToday ? "default" : "outline"}
-                      onClick={() => navigate(`/professor/meeting/${meeting.id}`)}
-                      className={isToday ? "bg-success hover:bg-success/90" : ""}
-                    >
-                      {isToday ? 'Iniciar Encontro' : 'Ver Detalhes'}
-                    </Button>
-                  </div>
-                </div>
-              );
-            })}
-            
             {upcomingMeetings.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 <Calendar className="w-12 h-12 mx-auto mb-4" />
@@ -186,41 +131,6 @@ export const ProfessorEncontrosPage = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {pastMeetings.slice(0, 10).map((meeting) => {
-              const classInfo = getClassInfo(meeting.classId);
-              
-              return (
-                <div key={meeting.id} className="flex items-center justify-between p-4 border rounded-lg opacity-75">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
-                      <Video className="w-6 h-6 text-muted-foreground" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium">{meeting.title}</h3>
-                      <p className="text-sm text-muted-foreground">{classInfo?.name}</p>
-                      <div className="flex items-center gap-4 mt-1">
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Calendar className="w-3 h-3" />
-                          {new Date(meeting.dateTime).toLocaleDateString('pt-BR')}
-                        </div>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Clock className="w-3 h-3" />
-                          {meeting.duration}min
-                        </div>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Users className="w-3 h-3" />
-                          {meeting.attendanceList?.length || 0} participantes
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary">Concluído</Badge>
-                  </div>
-                </div>
-              );
-            })}
-            
             {pastMeetings.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 <Clock className="w-12 h-12 mx-auto mb-4" />
@@ -231,6 +141,19 @@ export const ProfessorEncontrosPage = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* No Classes State */}
+      {professorClasses.length === 0 && (
+        <Card>
+          <CardContent className="p-8 text-center">
+            <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="font-medium mb-2">Nenhuma turma atribuída</h3>
+            <p className="text-sm text-muted-foreground">
+              Aguarde a atribuição de turmas pelo administrador para poder agendar encontros.
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

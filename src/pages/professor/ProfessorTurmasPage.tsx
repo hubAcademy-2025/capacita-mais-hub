@@ -3,22 +3,25 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
-import { useAppStore } from '@/store/useAppStore';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
+import { useClasses } from '@/hooks/useClasses';
+import { useEnrollments } from '@/hooks/useEnrollments';
 
 export const ProfessorTurmasPage = () => {
   const navigate = useNavigate();
-  const { currentUser, classes, users, trails, enrollments } = useAppStore();
+  const { userProfile } = useSupabaseAuth();
+  const { classes } = useClasses();
+  const { enrollments } = useEnrollments();
 
-  if (!currentUser) return null;
+  if (!userProfile) return null;
 
+  // Get professor's classes - classes where the professor is assigned
   const professorClasses = classes.filter(c => 
-    (c.professorIds && c.professorIds.includes(currentUser.id)) || 
-    // @ts-ignore - backward compatibility
-    c.professorId === currentUser.id
+    c.professors.some(p => p.id === userProfile.id)
   );
 
   const calculateAvgProgress = (classId: string) => {
-    const classEnrollments = enrollments.filter(e => e.classId === classId);
+    const classEnrollments = enrollments.filter(e => e.class_id === classId);
     if (classEnrollments.length === 0) return 0;
     return Math.round(classEnrollments.reduce((acc, e) => acc + e.progress, 0) / classEnrollments.length);
   };
@@ -33,9 +36,9 @@ export const ProfessorTurmasPage = () => {
       {/* Classes Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {professorClasses.map((classroom) => {
-          const trail = trails.find(t => t.id === classroom.trailId);
+          const trail = classroom.trails[0]; // Get first trail
           const avgProgress = calculateAvgProgress(classroom.id);
-          const classEnrollments = enrollments.filter(e => e.classId === classroom.id);
+          const classEnrollments = enrollments.filter(e => e.class_id === classroom.id);
           
           return (
             <Card key={classroom.id} className="hover:shadow-lg transition-shadow cursor-pointer">
@@ -53,15 +56,15 @@ export const ProfessorTurmasPage = () => {
               <CardContent className="space-y-4">
                 {trail && (
                   <div>
-                    <p className="text-sm font-medium mb-1">Trilha: {trail.title}</p>
-                    <Badge variant="outline" className="text-xs">{trail.level}</Badge>
+                    <p className="text-sm font-medium mb-1">Trilha: {trail?.title || 'Nenhuma trilha'}</p>
+                    <Badge variant="outline" className="text-xs">Trilha</Badge>
                   </div>
                 )}
                 
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="text-muted-foreground">Alunos</p>
-                    <p className="font-medium">{classroom.studentIds.length}</p>
+                    <p className="font-medium">{classroom.student_count}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Progresso Médio</p>
@@ -122,7 +125,7 @@ export const ProfessorTurmasPage = () => {
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold text-success">
-                  {professorClasses.reduce((acc, c) => acc + c.studentIds.length, 0)}
+                  {professorClasses.reduce((acc, c) => acc + c.student_count, 0)}
                 </p>
                 <p className="text-sm text-muted-foreground">Total de Alunos</p>
               </div>

@@ -126,7 +126,7 @@ export const AlunoDashboard = () => {
                     </div>
                     
                     <Button size="sm" className="w-full" asChild>
-                      <Link to="/aluno/trilhas">
+                      <Link to={`/aluno/trilhas/${trail.id}`}>
                         <Play className="w-4 h-4 mr-2" />
                         Continuar
                       </Link>

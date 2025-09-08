@@ -139,7 +139,7 @@ export const AlunoTrilhaPage = () => {
                     </div>
                     
                     <Button size="sm" className="w-full" asChild>
-                      <Link to="/aluno/trilhas">
+                      <Link to={`/aluno/trilhas/${trail?.id || classroom.id}`}>
                         <Play className="w-4 h-4 mr-2" />
                         Continuar
                       </Link>
@@ -167,7 +167,7 @@ export const AlunoTrilhaPage = () => {
                 <h3 className="font-medium mb-2">{trail.title}</h3>
                 <p className="text-sm text-muted-foreground mb-3">Trilha de aprendizado</p>
                 <Button size="sm" className="w-full" asChild>
-                  <Link to="/aluno/trilhas">
+                  <Link to={`/aluno/trilhas/${trail.id}`}>
                     <Play className="w-4 h-4 mr-2" />
                     Acessar
                   </Link>
