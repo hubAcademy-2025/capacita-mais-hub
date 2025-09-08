@@ -20,7 +20,7 @@ interface ManageClassDialogProps {
 }
 
 export const ManageClassDialog = ({ classroom }: ManageClassDialogProps) => {
-  const { users, trails, updateClass, deleteClass } = useAppStore();
+  const { users, trails, updateClass, deleteClass, enrollments } = useAppStore();
   const [open, setOpen] = useState(false);
   
   // Handle both old and new data structure
@@ -41,6 +41,7 @@ export const ManageClassDialog = ({ classroom }: ManageClassDialogProps) => {
   const professors = users.filter(u => formData.professorIds.includes(u.id));
   const students = users.filter(u => classroom.studentIds.includes(u.id));
   const availableProfessors = users.filter(u => u.role === 'professor');
+  const availableStudents = users.filter(u => u.role === 'aluno' && !classroom.studentIds.includes(u.id));
   const classTrails = trails.filter(t => formData.trailIds.includes(t.id));
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -83,6 +84,45 @@ export const ManageClassDialog = ({ classroom }: ManageClassDialogProps) => {
       ...formData,
       trailIds: formData.trailIds.filter(id => id !== trailId)
     });
+  };
+
+  const addStudent = (studentId: string) => {
+    if (!classroom.studentIds.includes(studentId)) {
+      const updatedStudentIds = [...classroom.studentIds, studentId];
+      updateClass(classroom.id, { studentIds: updatedStudentIds });
+      
+      // Create enrollment if it doesn't exist
+      const existingEnrollment = enrollments.find(e => 
+        e.studentId === studentId && e.classId === classroom.id
+      );
+      
+      if (!existingEnrollment) {
+        // Add enrollment to store - we'll need to add this function to the store
+        const newEnrollment = {
+          studentId,
+          classId: classroom.id,
+          progress: 0,
+          completedContent: [],
+          enrolledAt: new Date().toISOString()
+        };
+        // For now, we'll update the enrollments directly through the store
+        useAppStore.setState(state => ({
+          enrollments: [...state.enrollments, newEnrollment]
+        }));
+      }
+    }
+  };
+
+  const removeStudent = (studentId: string) => {
+    const updatedStudentIds = classroom.studentIds.filter(id => id !== studentId);
+    updateClass(classroom.id, { studentIds: updatedStudentIds });
+    
+    // Remove enrollment
+    useAppStore.setState(state => ({
+      enrollments: state.enrollments.filter(e => 
+        !(e.studentId === studentId && e.classId === classroom.id)
+      )
+    }));
   };
 
   const handleDelete = () => {
@@ -219,20 +259,46 @@ export const ManageClassDialog = ({ classroom }: ManageClassDialogProps) => {
 
           <div>
             <Label>Alunos ({students.length})</Label>
-            <div className="max-h-32 overflow-y-auto border rounded-md p-2 space-y-1">
-              {students.length > 0 ? (
-                students.map((student) => (
-                  <div key={student.id} className="flex items-center gap-2">
-                    <Users className="w-4 h-4" />
-                    <span className="text-sm">{student.name}</span>
-                    <Badge variant="secondary" className="text-xs">
-                      {student.email}
-                    </Badge>
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground">Nenhum aluno matriculado</p>
-              )}
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <Select onValueChange={addStudent}>
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="Adicionar aluno" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableStudents.map((student) => (
+                      <SelectItem key={student.id} value={student.id}>
+                        {student.name} ({student.email})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="max-h-32 overflow-y-auto border rounded-md p-2 space-y-1">
+                {students.length > 0 ? (
+                  students.map((student) => (
+                    <div key={student.id} className="flex items-center justify-between p-2 border rounded-md">
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4" />
+                        <span className="text-sm">{student.name}</span>
+                        <Badge variant="secondary" className="text-xs">
+                          {student.email}
+                        </Badge>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeStudent(student.id)}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground">Nenhum aluno matriculado</p>
+                )}
+              </div>
             </div>
           </div>
 
