@@ -118,9 +118,9 @@ export const CreateTrailDialog = ({ trigger }: CreateTrailDialogProps) => {
                   <SelectValue placeholder="Selecione o nível" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="beginner">Iniciante</SelectItem>
-                  <SelectItem value="intermediate">Intermediário</SelectItem>
-                  <SelectItem value="advanced">Avançado</SelectItem>
+                  <SelectItem value="Iniciante">Iniciante</SelectItem>
+                  <SelectItem value="Intermediário">Intermediário</SelectItem>
+                  <SelectItem value="Avançado">Avançado</SelectItem>
                 </SelectContent>
               </Select>
             </div>
