@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useEnrollments } from '@/hooks/useEnrollments';
 import { useClasses } from '@/hooks/useClasses';
+import { supabase } from '@/integrations/supabase/client';
 
 export const AlunoEncontrosPage = () => {
   const navigate = useNavigate();
@@ -21,10 +22,26 @@ export const AlunoEncontrosPage = () => {
   const studentClassIds = studentEnrollments.map(e => e.class_id);
   const studentClasses = classes.filter(c => studentClassIds.includes(c.id));
   
-  // For now, no meetings data from Supabase yet - placeholder
-  const allMeetings: any[] = [];
-  const upcomingMeetings: any[] = [];
-  const pastMeetings: any[] = [];
+  // Fetch meetings for student's classes
+  const [meetings, setMeetings] = React.useState<any[]>([]);
+  
+  React.useEffect(() => {
+    if (studentClassIds.length > 0) {
+      const fetchMeetings = async () => {
+        const { data } = await supabase
+          .from('meetings')
+          .select('*')
+          .in('class_id', studentClassIds)
+          .order('date_time', { ascending: true });
+        setMeetings(data || []);
+      };
+      fetchMeetings();
+    }
+  }, [studentClassIds.join(',')]);
+
+  const now = new Date();
+  const upcomingMeetings = meetings.filter(m => new Date(m.date_time) > now);
+  const pastMeetings = meetings.filter(m => new Date(m.date_time) <= now);
 
   const getClassInfo = (classId: string) => {
     const classroom = studentClasses.find(c => c.id === classId);
@@ -50,8 +67,8 @@ export const AlunoEncontrosPage = () => {
         <CardContent>
           <div className="space-y-4">
             {upcomingMeetings.map((meeting) => {
-              const { classroom, professor } = getClassInfo(meeting.classId);
-              const isToday = new Date(meeting.dateTime).toDateString() === new Date().toDateString();
+              const { classroom, professor } = getClassInfo(meeting.class_id);
+              const isToday = new Date(meeting.date_time).toDateString() === new Date().toDateString();
               const isLive = meeting.status === 'live';
               
               return (
@@ -69,11 +86,11 @@ export const AlunoEncontrosPage = () => {
                       <div className="flex items-center gap-4 mt-1">
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Calendar className="w-3 h-3" />
-                          {new Date(meeting.dateTime).toLocaleDateString('pt-BR')}
+                          {new Date(meeting.date_time).toLocaleDateString('pt-BR')}
                         </div>
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Clock className="w-3 h-3" />
-                          {new Date(meeting.dateTime).toLocaleTimeString('pt-BR', { 
+                          {new Date(meeting.date_time).toLocaleTimeString('pt-BR', { 
                             hour: '2-digit', 
                             minute: '2-digit' 
                           })} ({meeting.duration}min)
@@ -123,7 +140,7 @@ export const AlunoEncontrosPage = () => {
         <CardContent>
           <div className="space-y-4">
             {pastMeetings.slice(0, 5).map((meeting) => {
-              const { classroom, professor } = getClassInfo(meeting.classId);
+              const { classroom, professor } = getClassInfo(meeting.class_id);
               
               return (
                 <div key={meeting.id} className="flex items-center justify-between p-4 border rounded-lg opacity-75">
@@ -138,7 +155,7 @@ export const AlunoEncontrosPage = () => {
                       <div className="flex items-center gap-4 mt-1">
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Calendar className="w-3 h-3" />
-                          {new Date(meeting.dateTime).toLocaleDateString('pt-BR')}
+                          {new Date(meeting.date_time).toLocaleDateString('pt-BR')}
                         </div>
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Clock className="w-3 h-3" />

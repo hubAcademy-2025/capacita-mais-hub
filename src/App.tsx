@@ -30,6 +30,7 @@ import { AlunoEncontrosPage } from '@/pages/aluno/AlunoEncontrosPage';
 import { ClassroomPage } from '@/pages/aluno/ClassroomPage';
 import { AlunoContentViewerPage } from '@/pages/aluno/AlunoContentViewerPage';
 import { AlunoSimpleContentViewerPage } from '@/pages/aluno/AlunoSimpleContentViewerPage';
+import { AlunoTrailDetailPage } from '@/pages/aluno/AlunoTrailDetailPage';
 import { AlunoMeetingRoomPage } from '@/pages/aluno/AlunoMeetingRoomPage';
 
 import { PerfilPage } from '@/pages/PerfilPage';
@@ -179,10 +180,10 @@ const App: React.FC = () => {
                </Layout>
              </ProtectedRoute>
            } />
-           <Route path="/aluno/trilha/:trailId" element={
+           <Route path="/aluno/trilhas/:trailId" element={
              <ProtectedRoute>
                <Layout>
-                 <AlunoTrilhaPage />
+                 <AlunoTrailDetailPage />
                </Layout>
              </ProtectedRoute>
            } />
