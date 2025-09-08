@@ -82,7 +82,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   sidebarCollapsed: false,
   
   // Actions
-  setCurrentUser: (user) => set({ currentUser: user, currentRole: user.role }),
+  setCurrentUser: (user) => set({ currentUser: user, currentRole: user?.role || null }),
   setCurrentRole: (role) => set({ currentRole: role }),
   toggleSidebar: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
   setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),

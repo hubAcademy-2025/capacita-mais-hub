@@ -12,7 +12,11 @@ export const ClassroomPage = () => {
   const { classes, trails, enrollments, currentUser, userProgress } = useAppStore();
   
   const classroom = classes.find(c => c.id === classId);
-  const trail = classroom ? trails.find(t => t.id === classroom.trailId) : null;
+  // Handle multiple trails for a class - get first available trail
+  const trail = classroom ? trails.find(t => 
+    (classroom.trailIds && classroom.trailIds.includes(t.id)) || 
+    classroom.trailId === t.id
+  ) : null;
   const enrollment = enrollments.find(e => 
     e.classId === classId && e.studentId === currentUser?.id
   );

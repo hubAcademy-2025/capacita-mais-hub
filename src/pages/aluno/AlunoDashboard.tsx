@@ -19,6 +19,16 @@ export const AlunoDashboard = () => {
   
   const enrollment = currentUser ? getStudentEnrollment(currentUser.id) : null;
   const myClass = enrollment ? classes.find(c => c.id === enrollment.classId) : null;
+  // Get all available trails for student
+  const studentEnrollments = currentUser ? enrollment ? [enrollment] : [] : [];
+  const studentClasses = classes.filter(c => studentEnrollments.some(e => e.classId === c.id));
+  const allStudentTrails = trails.filter(t => 
+    studentClasses.some(c => 
+      (c.trailIds && c.trailIds.includes(t.id)) || 
+      c.trailId === t.id
+    )
+  );
+  
   // Handle multiple trails for a class
   const myTrails = myClass && myClass.trailIds ? 
     trails.filter(t => myClass.trailIds.includes(t.id)) : 
@@ -96,40 +106,58 @@ export const AlunoDashboard = () => {
         />
       </div>
 
-      {/* Current Learning Path */}
-      {myTrail && (
+      {/* All Available Trails */}
+      {allStudentTrails.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Minha Trilha de Aprendizado</CardTitle>
+            <CardTitle>Suas Trilhas de Aprendizado</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-foreground">{myTrail.title}</h3>
-                  <p className="text-muted-foreground mt-1">{myTrail.description}</p>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Professor: {professor?.name} • Turma: {myClass?.name}
-                  </p>
-                </div>
-                <Badge variant="secondary">{myTrail.level}</Badge>
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Progresso</span>
-                  <span>{enrollment?.progress}%</span>
-                </div>
-                <Progress value={enrollment?.progress} className="h-2" />
-              </div>
-              
-              <Button asChild className="w-full">
-                <Link to="/aluno/trilha">
-                  <Play className="w-4 h-4 mr-2" />
-                  Continuar Trilha
-                </Link>
-              </Button>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {allStudentTrails.slice(0, 4).map((trail) => {
+                const trailClass = studentClasses.find(c => 
+                  (c.trailIds && c.trailIds.includes(trail.id)) || c.trailId === trail.id
+                );
+                const trailEnrollment = trailClass ? studentEnrollments.find(e => e.classId === trailClass.id) : null;
+                
+                return (
+                  <div key={trail.id} className="p-4 border rounded-lg hover:shadow-md transition-shadow">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h3 className="font-medium">{trail.title}</h3>
+                        <p className="text-sm text-muted-foreground">{trail.description}</p>
+                        <Badge variant="outline" className="mt-1 text-xs">{trail.level}</Badge>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium">{trailEnrollment?.progress || 0}%</p>
+                        <Progress value={trailEnrollment?.progress || 0} className="w-16 mt-1" />
+                      </div>
+                    </div>
+                    
+                    <Button size="sm" className="w-full" onClick={() => {
+                      if (trailClass && trail.modules.length > 0) {
+                        const firstModule = trail.modules[0];
+                        if (firstModule.content.length > 0) {
+                          const firstContent = firstModule.content[0];
+                          window.location.href = `/aluno/turma/${trailClass.id}/trilha/${trail.id}/modulo/${firstModule.id}/conteudo/${firstContent.id}`;
+                        }
+                      }
+                    }}>
+                      <Play className="w-4 h-4 mr-2" />
+                      Continuar
+                    </Button>
+                  </div>
+                );
+              })}
             </div>
+            
+            {allStudentTrails.length > 4 && (
+              <div className="text-center mt-4">
+                <Button variant="outline" asChild>
+                  <Link to="/aluno/trilha">Ver Todas as Trilhas</Link>
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

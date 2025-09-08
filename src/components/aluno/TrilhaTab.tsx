@@ -13,7 +13,7 @@ interface TrilhaTabProps {
 }
 
 export const TrilhaTab = ({ trails }: TrilhaTabProps) => {
-  const { currentUser, userProgress, updateUserProgress, badges, userPoints } = useAppStore();
+  const { currentUser, userProgress, updateUserProgress, badges, userPoints, classes, enrollments } = useAppStore();
   const [selectedContent, setSelectedContent] = useState<Content | null>(null);
 
   const getUserProgress = (contentId: string) => {
@@ -38,15 +38,28 @@ export const TrilhaTab = ({ trails }: TrilhaTabProps) => {
     return allContent.length > 0 ? (completedContent / allContent.length) * 100 : 0;
   };
 
-  const handleContentClick = (content: Content) => {
+  const handleContentClick = (content: Content, trail: Trail, module: Module) => {
     if (content.isBlocked) return;
-    setSelectedContent(content);
     
-    if (currentUser) {
-      // Update last accessed
-      updateUserProgress(currentUser.id, content.id, {
-        lastAccessed: new Date().toISOString()
-      });
+    // Find the class that contains this trail
+    const studentEnrollments = enrollments.filter(e => e.studentId === currentUser?.id);
+    const studentClasses = classes.filter(c => studentEnrollments.some(e => e.classId === c.id));
+    const trailClass = studentClasses.find(c => 
+      (c.trailIds && c.trailIds.includes(trail.id)) || c.trailId === trail.id
+    );
+    
+    if (trailClass) {
+      // Navigate to the content viewer page
+      window.location.href = `/aluno/turma/${trailClass.id}/trilha/${trail.id}/modulo/${module.id}/conteudo/${content.id}`;
+    } else {
+      // Fallback to content selection if no class found
+      setSelectedContent(content);
+      
+      if (currentUser) {
+        updateUserProgress(currentUser.id, content.id, {
+          lastAccessed: new Date().toISOString()
+        });
+      }
     }
   };
 
@@ -184,7 +197,7 @@ export const TrilhaTab = ({ trails }: TrilhaTabProps) => {
                                             ? 'bg-primary-light border-primary'
                                             : 'bg-muted/50 hover:bg-muted cursor-pointer'
                                         }`}
-                                        onClick={() => handleContentClick(content)}
+                                        onClick={() => handleContentClick(content, trail, module)}
                                       >
                                         <div className="flex items-center gap-3">
                                           <div className="flex items-center gap-2">
