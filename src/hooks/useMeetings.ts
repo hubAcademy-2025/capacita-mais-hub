@@ -39,7 +39,7 @@ export const useMeetings = () => {
         .from('meetings')
         .select(`
           *,
-          classes:class_id (
+          class:classes!inner(
             id,
             name
           )
