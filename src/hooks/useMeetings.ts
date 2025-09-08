@@ -54,7 +54,7 @@ export const useMeetings = () => {
 
       const meetingsWithClass = data?.map(meeting => ({
         ...meeting,
-        class: meeting.classes
+        class: meeting.class
       })) || [];
 
       console.log('Processed meetings:', meetingsWithClass);
