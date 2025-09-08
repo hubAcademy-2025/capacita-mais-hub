@@ -90,15 +90,16 @@ export const AdminTurmasPage = () => {
                         {classroom.status === 'active' ? 'Ativa' : 'Inativa'}
                       </Badge>
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => navigate(`/admin/turmas/${classroom.id}`)}
-                      >
-                        Ver Detalhes
-                      </Button>
-                    </div>
+                      <div className="flex gap-2">
+                        <ManageClassDialog classroom={classroom} />
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => navigate(`/admin/turmas/${classroom.id}`)}
+                        >
+                          Ver Detalhes
+                        </Button>
+                      </div>
                   </div>
                 </div>
               ))}

@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Users, BookOpen, BarChart3, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Users, BookOpen, BarChart3, TrendingUp, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,12 +9,14 @@ import { useClasses } from '@/hooks/useClasses';
 import { useEnrollments } from '@/hooks/useEnrollments';
 import { useUsers } from '@/hooks/useUsers';
 import { useTrails } from '@/hooks/useTrails';
+import { ManageClassDialog } from '@/components/admin/ManageClassDialog';
+import { AddStudentDialog } from '@/components/admin/AddStudentDialog';
 
 export const AdminClassDetailPage = () => {
   const { classId } = useParams();
   const navigate = useNavigate();
   const { classes, loading: classesLoading } = useClasses();
-  const { enrollments, loading: enrollmentsLoading } = useEnrollments();
+  const { enrollments, loading: enrollmentsLoading, deleteEnrollment } = useEnrollments();
   const { users, loading: usersLoading } = useUsers();
   const { trails, loading: trailsLoading } = useTrails();
 
@@ -82,6 +84,16 @@ export const AdminClassDetailPage = () => {
     return { completed: 0, total: 10 };
   };
 
+  const handleRemoveStudent = async (enrollmentId: string) => {
+    if (window.confirm('Tem certeza que deseja remover este aluno da turma?')) {
+      try {
+        await deleteEnrollment(enrollmentId);
+      } catch (error) {
+        console.error('Error removing student:', error);
+      }
+    }
+  };
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -94,15 +106,21 @@ export const AdminClassDetailPage = () => {
           <ArrowLeft className="w-4 h-4" />
           Voltar
         </Button>
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">{classroom.name}</h1>
-          <p className="text-muted-foreground">
+        <div className="flex-1">
+          <div className="flex items-center gap-4">
+            <h1 className="text-3xl font-bold text-foreground">{classroom.name}</h1>
+            <Badge variant={classroom.status === 'active' ? 'default' : 'secondary'}>
+              {classroom.status === 'active' ? 'Ativa' : classroom.status === 'completed' ? 'Completa' : 'Pausada'}
+            </Badge>
+          </div>
+          <div className="text-sm text-muted-foreground mt-1">
             Criada em {new Date(classroom.created_at).toLocaleDateString('pt-BR')}
-          </p>
+          </div>
         </div>
-        <Badge variant={classroom.status === 'active' ? 'default' : 'secondary'}>
-          {classroom.status === 'active' ? 'Ativa' : classroom.status === 'completed' ? 'Completa' : 'Pausada'}
-        </Badge>
+        <div className="flex items-center gap-2">
+          <AddStudentDialog classroom={classroom} />
+          <ManageClassDialog classroom={classroom} />
+        </div>
       </div>
 
       {/* Stats Grid */}
@@ -169,12 +187,13 @@ export const AdminClassDetailPage = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {students.map((student) => {
-                  const progress = getStudentProgress(student.id);
-                  const contentProgress = getStudentContentProgress(student.id);
-                  
-                  return (
-                    <div key={student.id} className="flex items-center justify-between p-4 border rounded-lg">
+                 {students.map((student) => {
+                   const progress = getStudentProgress(student.id);
+                   const contentProgress = getStudentContentProgress(student.id);
+                   const enrollment = classEnrollments.find(e => e.student_id === student.id);
+                   
+                   return (
+                     <div key={student.id} className="flex items-center justify-between p-4 border rounded-lg">
                        <div className="flex items-center gap-3">
                          <div className="w-10 h-10 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-medium">
                            {student.name?.charAt(0) || '?'}
@@ -187,13 +206,23 @@ export const AdminClassDetailPage = () => {
                            </p>
                          </div>
                        </div>
-                      <div className="text-right">
-                        <div className="text-lg font-bold">{progress.toFixed(1)}%</div>
-                        <Progress value={progress} className="w-24 mt-1" />
-                      </div>
-                    </div>
-                  );
-                })}
+                       <div className="flex items-center gap-3">
+                         <div className="text-right">
+                           <div className="text-lg font-bold">{progress.toFixed(1)}%</div>
+                           <Progress value={progress} className="w-24 mt-1" />
+                         </div>
+                         <Button
+                           variant="ghost"
+                           size="sm"
+                           onClick={() => enrollment && handleRemoveStudent(enrollment.id)}
+                           className="text-destructive hover:text-destructive"
+                         >
+                           <X className="w-4 h-4" />
+                         </Button>
+                       </div>
+                     </div>
+                   );
+                 })}
                 {students.length === 0 && (
                   <p className="text-center text-muted-foreground py-8">
                     Nenhum aluno matriculado nesta turma.
