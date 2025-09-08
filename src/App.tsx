@@ -36,6 +36,7 @@ import { PerfilPage } from '@/pages/PerfilPage';
 import { ConfiguracoesPage } from '@/pages/ConfiguracoesPage';
 import { AuthPage } from '@/pages/AuthPage';
 import NotFound from '@/pages/NotFound';
+import { RoleBasedRedirect } from '@/components/auth/RoleBasedRedirect';
 
 import { Toaster } from '@/components/ui/toaster';
 
@@ -47,7 +48,7 @@ const App: React.FC = () => {
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/" element={
             <ProtectedRoute>
-              <Layout />
+              <RoleBasedRedirect />
             </ProtectedRoute>
           } />
           <Route path="/admin" element={

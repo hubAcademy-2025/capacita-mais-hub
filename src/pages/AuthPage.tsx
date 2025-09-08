@@ -96,17 +96,6 @@ export const AuthPage = () => {
     }
   };
 
-  const handleDemoAccess = () => {
-    // Set a demo admin user for demonstration purposes
-    const demoUser = users.find(u => u.role === 'admin') || users[0];
-    setCurrentUser(demoUser);
-    
-    toast({
-      title: "Acesso demo",
-      description: `Entrando como ${demoUser.name} (${demoUser.role})`,
-    });
-    navigate('/');
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 flex items-center justify-center p-4">
@@ -128,9 +117,9 @@ export const AuthPage = () => {
         {/* Helper message for regular users */}
         {!isInvite && (
           <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
-            <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-2">💡 Para testar:</h3>
+            <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-2">💡 Bem-vindo!</h3>
             <p className="text-sm text-blue-700 dark:text-blue-300">
-              Crie uma conta com qualquer email (ex: test@example.com) ou use o botão "Demo" abaixo.
+              Faça login com sua conta ou crie uma nova conta para começar.
             </p>
           </div>
         )}
@@ -230,27 +219,6 @@ export const AuthPage = () => {
               </TabsContent>
             </Tabs>
 
-            <div className="mt-6">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">
-                    Ou
-                  </span>
-                </div>
-              </div>
-              {!isInvite && (
-                <Button 
-                  variant="outline" 
-                  className="w-full mt-4"
-                  onClick={handleDemoAccess}
-                >
-                  Continuar sem login (Demo)
-                </Button>
-              )}
-            </div>
           </CardContent>
         </Card>
       </div>

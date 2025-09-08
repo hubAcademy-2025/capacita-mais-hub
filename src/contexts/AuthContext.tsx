@@ -28,7 +28,54 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const { setCurrentUser, users } = useAppStore();
+  const { setCurrentUser } = useAppStore();
+
+  // Function to fetch user profile and roles from database
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      // Get user profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
+        return null;
+      }
+
+      if (!profile) {
+        console.error('No profile found for user:', userId);
+        return null;
+      }
+
+      // Get user roles
+      const { data: userRoles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId);
+
+      if (rolesError) {
+        console.error('Error fetching roles:', rolesError);
+        return null;
+      }
+
+      const roles = userRoles?.map(r => r.role) || [];
+      const primaryRole = roles[0] || 'aluno';
+
+      return {
+        id: profile.id,
+        name: profile.name,
+        email: profile.email,
+        role: primaryRole as 'admin' | 'professor' | 'aluno',
+        avatar: profile.avatar_url || ''
+      };
+    } catch (error) {
+      console.error('Error in fetchUserProfile:', error);
+      return null;
+    }
+  };
 
   useEffect(() => {
     // Set up auth state listener
@@ -37,23 +84,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Update app store with current user
+        // Update app store with current user from database
         if (session?.user) {
-          // Find user in mock data or create a basic user
-          const foundUser = users.find(u => u.email === session.user.email);
-          if (foundUser) {
-            setCurrentUser(foundUser);
-          } else {
-            // Create a basic user for demo purposes
-            const basicUser = {
-              id: session.user.id,
-              name: session.user.email?.split('@')[0] || 'Usuário',
-              email: session.user.email || '',
-              role: 'aluno' as const,
-              avatar: ''
-            };
-            setCurrentUser(basicUser);
-          }
+          // Use setTimeout to avoid potential issues with async calls in auth callback
+          setTimeout(async () => {
+            const userProfile = await fetchUserProfile(session.user.id);
+            if (userProfile) {
+              setCurrentUser(userProfile);
+            }
+          }, 0);
         } else {
           setCurrentUser(null);
         }
@@ -63,14 +102,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     );
 
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        const userProfile = await fetchUserProfile(session.user.id);
+        if (userProfile) {
+          setCurrentUser(userProfile);
+        }
+      }
+      
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
-  }, [users, setCurrentUser]);
+  }, [setCurrentUser]);
 
   const signOut = async () => {
     console.log('AuthContext: Starting signOut process');
