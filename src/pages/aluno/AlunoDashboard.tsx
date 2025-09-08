@@ -4,52 +4,43 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { useAppStore } from '@/store/useAppStore';
 import { Link } from 'react-router-dom';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
+import { useEnrollments } from '@/hooks/useEnrollments';
+import { useClasses } from '@/hooks/useClasses';
+import { useTrails } from '@/hooks/useTrails';
 
 export const AlunoDashboard = () => {
-  const { 
-    currentUser, 
-    getStudentEnrollment, 
-    classes, 
-    trails, 
-    meetings,
-    users 
-  } = useAppStore();
+  const { userProfile } = useSupabaseAuth();
+  const { enrollments, getClassEnrollments } = useEnrollments();
+  const { classes } = useClasses();
+  const { trails } = useTrails();
   
-  const enrollment = currentUser ? getStudentEnrollment(currentUser.id) : null;
-  const myClass = enrollment ? classes.find(c => c.id === enrollment.classId) : null;
-  // Get all available trails for student
-  const studentEnrollments = currentUser ? enrollment ? [enrollment] : [] : [];
-  const studentClasses = classes.filter(c => studentEnrollments.some(e => e.classId === c.id));
-  const allStudentTrails = trails.filter(t => 
-    studentClasses.some(c => 
-      (c.trailIds && c.trailIds.includes(t.id)) || 
-      c.trailId === t.id
-    )
-  );
-  
-  // Handle multiple trails for a class
-  const myTrails = myClass && myClass.trailIds ? 
-    trails.filter(t => myClass.trailIds.includes(t.id)) : 
-    myClass && myClass.trailId ? 
-    trails.filter(t => t.id === myClass.trailId) : [];
-  const myTrail = myTrails[0] || null;
-  const professor = myClass ? users.find(u => 
-    myClass.professorIds?.includes(u.id) || 
-    // @ts-ignore - backward compatibility
-    myClass.professorId === u.id
-  ) : null;
-  
-  const upcomingMeetings = myClass ? 
-    meetings.filter(m => 
-      m.classId === myClass.id && 
-      new Date(m.dateTime) > new Date() && 
-      m.status === 'scheduled'
-    ).slice(0, 3) : [];
+  if (!userProfile) return null;
 
-  const totalModules = myTrail?.modules.length || 0;
-  const completedModules = Math.floor((enrollment?.progress || 0) / 100 * totalModules);
+  // Get student's enrollments and classes
+  const studentEnrollments = enrollments.filter(e => e.student_id === userProfile.id);
+  const studentClassIds = studentEnrollments.map(e => e.class_id);
+  const studentClasses = classes.filter(c => studentClassIds.includes(c.id));
+  
+  // Get student's trails from their classes
+  const studentTrails = studentClasses.flatMap(c => c.trails);
+  
+  // Get first enrollment for main stats (could be enhanced to show multiple)
+  const mainEnrollment = studentEnrollments[0];
+  const mainClass = mainEnrollment ? classes.find(c => c.id === mainEnrollment.class_id) : null;
+  const mainTrail = mainClass?.trails[0];
+
+  // Calculate stats
+  const averageProgress = studentEnrollments.length > 0 
+    ? Math.round(studentEnrollments.reduce((acc, e) => acc + e.progress, 0) / studentEnrollments.length)
+    : 0;
+    
+  const totalModules = studentTrails.length; // Simplified - could be enhanced with actual module count
+  const completedModules = Math.floor(averageProgress / 100 * totalModules);
+
+  // Placeholder for upcoming meetings (to be implemented with meetings data)
+  const upcomingMeetings: any[] = [];
 
   return (
     <div className="p-6 space-y-6 animate-fade-in">
@@ -58,12 +49,12 @@ export const AlunoDashboard = () => {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold mb-2">
-              Olá, {currentUser?.name}! 👋
+              Olá, {userProfile?.name || userProfile?.email}! 👋
             </h2>
             <p className="text-primary-foreground/80 mb-4">
               Continue seu aprendizado onde parou
             </p>
-            {myTrail && (
+            {mainTrail && (
               <Button asChild variant="secondary">
                 <Link to="/aluno/trilhas">
                   <Play className="w-4 h-4 mr-2" />
@@ -73,9 +64,9 @@ export const AlunoDashboard = () => {
             )}
           </div>
           
-          {enrollment && (
+          {mainEnrollment && (
             <div className="text-right">
-              <p className="text-3xl font-bold">{enrollment.progress}%</p>
+              <p className="text-3xl font-bold">{averageProgress}%</p>
               <p className="text-primary-foreground/80">Progresso Geral</p>
             </div>
           )}
@@ -86,7 +77,7 @@ export const AlunoDashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatsCard
           title="Progresso da Trilha"
-          value={`${enrollment?.progress || 0}%`}
+          value={`${averageProgress}%`}
           icon={BookOpen}
         />
         <StatsCard
@@ -101,32 +92,32 @@ export const AlunoDashboard = () => {
         />
         <StatsCard
           title="Pontuação"
-          value={enrollment?.finalGrade || 'N/A'}
+          value={mainEnrollment?.final_grade || 'N/A'}
           icon={Trophy}
         />
       </div>
 
       {/* All Available Trails */}
-      {allStudentTrails.length > 0 && (
+      {studentTrails.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Suas Trilhas de Aprendizado</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {allStudentTrails.slice(0, 4).map((trail) => {
+              {studentTrails.slice(0, 4).map((trail) => {
                 const trailClass = studentClasses.find(c => 
-                  (c.trailIds && c.trailIds.includes(trail.id)) || c.trailId === trail.id
+                  c.trails.some(t => t.id === trail.id)
                 );
-                const trailEnrollment = trailClass ? studentEnrollments.find(e => e.classId === trailClass.id) : null;
+                const trailEnrollment = trailClass ? studentEnrollments.find(e => e.class_id === trailClass.id) : null;
                 
                 return (
                   <div key={trail.id} className="p-4 border rounded-lg hover:shadow-md transition-shadow">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
                         <h3 className="font-medium">{trail.title}</h3>
-                        <p className="text-sm text-muted-foreground">{trail.description}</p>
-                        <Badge variant="outline" className="mt-1 text-xs">{trail.level}</Badge>
+                        <p className="text-sm text-muted-foreground">Trilha de aprendizado</p>
+                        <Badge variant="outline" className="mt-1 text-xs">Trilha</Badge>
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-medium">{trailEnrollment?.progress || 0}%</p>
@@ -134,24 +125,18 @@ export const AlunoDashboard = () => {
                       </div>
                     </div>
                     
-                    <Button size="sm" className="w-full" onClick={() => {
-                      if (trailClass && trail.modules.length > 0) {
-                        const firstModule = trail.modules[0];
-                        if (firstModule.content.length > 0) {
-                          const firstContent = firstModule.content[0];
-                          window.location.href = `/aluno/content/${firstContent.id}`;
-                        }
-                      }
-                    }}>
-                      <Play className="w-4 h-4 mr-2" />
-                      Continuar
+                    <Button size="sm" className="w-full" asChild>
+                      <Link to="/aluno/trilhas">
+                        <Play className="w-4 h-4 mr-2" />
+                        Continuar
+                      </Link>
                     </Button>
                   </div>
                 );
               })}
             </div>
             
-            {allStudentTrails.length > 4 && (
+            {studentTrails.length > 4 && (
               <div className="text-center mt-4">
                 <Button variant="outline" asChild>
                   <Link to="/aluno/trilhas">Ver Todas as Trilhas</Link>

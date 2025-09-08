@@ -1,28 +1,29 @@
-import { BookOpen, Play, Lock, CheckCircle, Award, Target } from 'lucide-react';
+import { BookOpen, Play, Target, CheckCircle, Award } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useAppStore } from '@/store/useAppStore';
-import { TrilhaTab } from '@/components/aluno/TrilhaTab';
+import { Link } from 'react-router-dom';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
+import { useEnrollments } from '@/hooks/useEnrollments';
+import { useClasses } from '@/hooks/useClasses';
+import { useTrails } from '@/hooks/useTrails';
 
 export const AlunoTrilhaPage = () => {
-  const { currentUser, classes, enrollments, trails, userProgress, userPoints, badges } = useAppStore();
+  const { userProfile } = useSupabaseAuth();
+  const { enrollments } = useEnrollments();
+  const { classes } = useClasses();
+  const { trails } = useTrails();
 
-  if (!currentUser) return null;
+  if (!userProfile) return null;
 
-  const studentEnrollments = enrollments.filter(e => e.studentId === currentUser.id);
-  const studentClasses = classes.filter(c => studentEnrollments.some(e => e.classId === c.id));
-  const studentTrails = trails.filter(t => 
-    studentClasses.some(c => 
-      (c.trailIds && c.trailIds.includes(t.id)) || 
-      // @ts-ignore - backward compatibility
-      c.trailId === t.id
-    )
-  );
-
-  const userPointsData = userPoints.find(up => up.userId === currentUser.id);
-  const earnedBadges = badges.filter(b => userPointsData?.badges.includes(b.id));
+  // Get student's enrollments and classes
+  const studentEnrollments = enrollments.filter(e => e.student_id === userProfile.id);
+  const studentClassIds = studentEnrollments.map(e => e.class_id);
+  const studentClasses = classes.filter(c => studentClassIds.includes(c.id));
+  
+  // Get student's trails from their classes
+  const studentTrails = studentClasses.flatMap(c => c.trails);
 
   const calculateOverallProgress = () => {
     if (studentEnrollments.length === 0) return 0;
@@ -31,14 +32,14 @@ export const AlunoTrilhaPage = () => {
   };
 
   const getContentProgress = () => {
-    const allContent = studentTrails.flatMap(t => t.modules.flatMap(m => m.content));
-    const userContentProgress = userProgress.filter(p => p.userId === currentUser.id);
-    const completedContent = userContentProgress.filter(p => p.completed).length;
+    // Simplified for now - can be enhanced with actual content progress tracking
+    const completed = Math.floor(calculateOverallProgress() / 10); // Mock calculation
+    const total = 10; // Mock total
     
     return {
-      total: allContent.length,
-      completed: completedContent,
-      percentage: allContent.length > 0 ? (completedContent / allContent.length) * 100 : 0
+      total,
+      completed,
+      percentage: total > 0 ? (completed / total) * 100 : 0
     };
   };
 
@@ -85,7 +86,7 @@ export const AlunoTrilhaPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-warning">Pontos</p>
-                <p className="text-3xl font-bold text-warning">{userPointsData?.totalPoints || 0}</p>
+                <p className="text-3xl font-bold text-warning">0</p>
                 <p className="text-xs text-warning/70">total acumulado</p>
               </div>
               <Award className="w-12 h-12 text-warning/50" />
@@ -94,8 +95,8 @@ export const AlunoTrilhaPage = () => {
         </Card>
       </div>
 
-      {/* Badges Section */}
-      {earnedBadges.length > 0 && (
+      {/* Badges Section - Hidden for now since we don't have badge data */}
+      {false && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -104,16 +105,8 @@ export const AlunoTrilhaPage = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex gap-4 overflow-x-auto pb-2">
-              {earnedBadges.map((badge) => (
-                <div key={badge.id} className="flex-shrink-0 text-center p-4 border rounded-lg bg-gradient-to-b from-accent-light to-accent/10 min-w-[120px]">
-                  <div className="text-3xl mb-2">{badge.icon}</div>
-                  <h3 className="font-medium text-sm">{badge.name}</h3>
-                  <Badge variant="secondary" className="mt-1 text-xs">
-                    +{badge.points} pts
-                  </Badge>
-                </div>
-              ))}
+            <div className="text-center py-8 text-muted-foreground">
+              <p>Badges em desenvolvimento</p>
             </div>
           </CardContent>
         </Card>
@@ -128,12 +121,8 @@ export const AlunoTrilhaPage = () => {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {studentClasses.slice(0, 2).map((classroom) => {
-                const enrollment = studentEnrollments.find(e => e.classId === classroom.id);
-                const trail = trails.find(t => 
-                  (classroom.trailIds && classroom.trailIds.includes(t.id)) || 
-                  // @ts-ignore - backward compatibility
-                  classroom.trailId === t.id
-                );
+                const enrollment = studentEnrollments.find(e => e.class_id === classroom.id);
+                const trail = classroom.trails[0]; // Get first trail
                 
                 return (
                   <div key={classroom.id} className="p-4 border rounded-lg hover:shadow-md transition-shadow">
@@ -141,7 +130,7 @@ export const AlunoTrilhaPage = () => {
                       <div>
                         <h3 className="font-medium">{classroom.name}</h3>
                         <p className="text-sm text-muted-foreground">{trail?.title}</p>
-                        <Badge variant="outline" className="mt-1 text-xs">{trail?.level}</Badge>
+                        <Badge variant="outline" className="mt-1 text-xs">Trilha</Badge>
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-medium">{enrollment?.progress || 0}%</p>
@@ -149,18 +138,11 @@ export const AlunoTrilhaPage = () => {
                       </div>
                     </div>
                     
-                    <Button size="sm" className="w-full" onClick={() => {
-                      // Navigate to the first content in the trail
-                      if (trail && trail.modules.length > 0) {
-                        const firstModule = trail.modules[0];
-                        if (firstModule.content.length > 0) {
-                          const firstContent = firstModule.content[0];
-                          window.location.href = `/aluno/content/${firstContent.id}`;
-                        }
-                      }
-                    }}>
-                      <Play className="w-4 h-4 mr-2" />
-                      Continuar
+                    <Button size="sm" className="w-full" asChild>
+                      <Link to="/aluno/trilhas">
+                        <Play className="w-4 h-4 mr-2" />
+                        Continuar
+                      </Link>
                     </Button>
                   </div>
                 );
@@ -179,7 +161,20 @@ export const AlunoTrilhaPage = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <TrilhaTab trails={studentTrails} />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {studentTrails.map((trail) => (
+              <div key={trail.id} className="p-4 border rounded-lg hover:shadow-md transition-shadow">
+                <h3 className="font-medium mb-2">{trail.title}</h3>
+                <p className="text-sm text-muted-foreground mb-3">Trilha de aprendizado</p>
+                <Button size="sm" className="w-full" asChild>
+                  <Link to="/aluno/trilhas">
+                    <Play className="w-4 h-4 mr-2" />
+                    Acessar
+                  </Link>
+                </Button>
+              </div>
+            ))}
+          </div>
         </CardContent>
       </Card>
 

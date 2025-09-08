@@ -4,38 +4,31 @@ import { Calendar, Clock, Users, Video } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useAppStore } from '@/store/useAppStore';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
+import { useEnrollments } from '@/hooks/useEnrollments';
+import { useClasses } from '@/hooks/useClasses';
 
 export const AlunoEncontrosPage = () => {
   const navigate = useNavigate();
-  const { currentUser, classes, enrollments, meetings, users } = useAppStore();
+  const { userProfile } = useSupabaseAuth();
+  const { enrollments } = useEnrollments();
+  const { classes } = useClasses();
 
-  if (!currentUser) return null;
+  if (!userProfile) return null;
 
-  const studentEnrollments = enrollments.filter(e => e.studentId === currentUser.id);
-  const studentClasses = classes.filter(c => studentEnrollments.some(e => e.classId === c.id));
+  // Get student's enrollments and classes
+  const studentEnrollments = enrollments.filter(e => e.student_id === userProfile.id);
+  const studentClassIds = studentEnrollments.map(e => e.class_id);
+  const studentClasses = classes.filter(c => studentClassIds.includes(c.id));
   
-  const allMeetings = meetings.filter(m => 
-    studentClasses.some(c => c.id === m.classId)
-  ).sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime());
-
-  const upcomingMeetings = allMeetings.filter(m => 
-    (new Date(m.dateTime) > new Date() && m.status === 'scheduled') ||
-    (m.status === 'live')
-  );
-
-  const pastMeetings = allMeetings.filter(m => 
-    (new Date(m.dateTime) <= new Date() && m.status === 'scheduled') || 
-    m.status === 'completed'
-  );
+  // For now, no meetings data from Supabase yet - placeholder
+  const allMeetings: any[] = [];
+  const upcomingMeetings: any[] = [];
+  const pastMeetings: any[] = [];
 
   const getClassInfo = (classId: string) => {
     const classroom = studentClasses.find(c => c.id === classId);
-    const professor = classroom ? users.find(u => 
-      classroom.professorIds?.includes(u.id) || 
-      // @ts-ignore - backward compatibility
-      classroom.professorId === u.id
-    ) : null;
+    const professor = classroom?.professors[0]; // Get first professor
     return { classroom, professor };
   };
 
