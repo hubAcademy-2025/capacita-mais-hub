@@ -62,6 +62,7 @@ const App = () => (
           <Routes>
             {/* Public Routes */}
             <Route path="/auth" element={<AuthPage />} />
+            <Route path="/login" element={<AuthPage />} />
             <Route path="/" element={<DashboardRedirect />} />
             
             {/* Protected Admin Routes */}

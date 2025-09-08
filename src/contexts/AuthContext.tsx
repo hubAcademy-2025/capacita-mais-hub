@@ -73,8 +73,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [users, setCurrentUser]);
 
   const signOut = async () => {
+    console.log('AuthContext: Starting signOut process');
     await supabase.auth.signOut();
     setCurrentUser(null);
+    console.log('AuthContext: SignOut completed');
   };
 
   const value = {

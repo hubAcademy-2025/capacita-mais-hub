@@ -22,6 +22,7 @@ export const AuthPage = () => {
 
   // Redirect if already authenticated
   if (currentUser) {
+    console.log('AuthPage: User is already logged in, redirecting to home', currentUser);
     return <Navigate to="/" replace />;
   }
 
