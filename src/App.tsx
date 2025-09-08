@@ -29,6 +29,7 @@ import { AlunoProgressoPage } from '@/pages/aluno/AlunoProgressoPage';
 import { AlunoEncontrosPage } from '@/pages/aluno/AlunoEncontrosPage';
 import { ClassroomPage } from '@/pages/aluno/ClassroomPage';
 import { AlunoContentViewerPage } from '@/pages/aluno/AlunoContentViewerPage';
+import { AlunoSimpleContentViewerPage } from '@/pages/aluno/AlunoSimpleContentViewerPage';
 import { AlunoMeetingRoomPage } from '@/pages/aluno/AlunoMeetingRoomPage';
 
 import { PerfilPage } from '@/pages/PerfilPage';
@@ -169,14 +170,21 @@ const App: React.FC = () => {
                 <AlunoDashboard />
               </Layout>
             </ProtectedRoute>
-          } />
-          <Route path="/aluno/trilha/:trailId" element={
-            <ProtectedRoute>
-              <Layout>
-                <AlunoTrilhaPage />
-              </Layout>
-            </ProtectedRoute>
-          } />
+           } />
+           <Route path="/aluno/trilhas" element={
+             <ProtectedRoute>
+               <Layout>
+                 <AlunoTrilhaPage />
+               </Layout>
+             </ProtectedRoute>
+           } />
+           <Route path="/aluno/trilha/:trailId" element={
+             <ProtectedRoute>
+               <Layout>
+                 <AlunoTrilhaPage />
+               </Layout>
+             </ProtectedRoute>
+           } />
           <Route path="/aluno/progresso" element={
             <ProtectedRoute>
               <Layout>
@@ -198,13 +206,13 @@ const App: React.FC = () => {
               </Layout>
             </ProtectedRoute>
           } />
-          <Route path="/aluno/content/:contentId" element={
-            <ProtectedRoute>
-              <Layout>
-                <AlunoContentViewerPage />
-              </Layout>
-            </ProtectedRoute>
-          } />
+           <Route path="/aluno/content/:contentId" element={
+             <ProtectedRoute>
+               <Layout>
+                 <AlunoSimpleContentViewerPage />
+               </Layout>
+             </ProtectedRoute>
+           } />
           <Route path="/aluno/meeting/:meetingId" element={
             <ProtectedRoute>
               <Layout>

@@ -34,7 +34,7 @@ const professorNavItems = [
 
 const alunoNavItems = [
   { icon: Home, label: 'Dashboard', path: '/aluno' },
-  { icon: BookOpen, label: 'Minha Trilha', path: '/aluno/trilha' },
+  { icon: BookOpen, label: 'Minha Trilha', path: '/aluno/trilhas' },
   { icon: Calendar, label: 'Encontros', path: '/aluno/encontros' },
   { icon: GraduationCap, label: 'Progresso', path: '/aluno/progresso' },
 ];

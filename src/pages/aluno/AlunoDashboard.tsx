@@ -65,7 +65,7 @@ export const AlunoDashboard = () => {
             </p>
             {myTrail && (
               <Button asChild variant="secondary">
-                <Link to="/aluno/trilha">
+                <Link to="/aluno/trilhas">
                   <Play className="w-4 h-4 mr-2" />
                   Continuar Aprendendo
                 </Link>
@@ -154,7 +154,7 @@ export const AlunoDashboard = () => {
             {allStudentTrails.length > 4 && (
               <div className="text-center mt-4">
                 <Button variant="outline" asChild>
-                  <Link to="/aluno/trilha">Ver Todas as Trilhas</Link>
+                  <Link to="/aluno/trilhas">Ver Todas as Trilhas</Link>
                 </Button>
               </div>
             )}
