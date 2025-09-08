@@ -122,7 +122,9 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Create the invite URL (pointing to the auth page)
-    const inviteUrl = `${new URL(req.url).origin}/auth?invite=true&email=${encodeURIComponent(email)}&role=${encodeURIComponent(role)}`;
+    // Use the application domain instead of the edge function domain
+    const appUrl = Deno.env.get("APP_URL") || "https://mwivhbibpfmweqcndxqu.lovableproject.com";
+    const inviteUrl = `${appUrl}/auth?invite=true&email=${encodeURIComponent(email)}&role=${encodeURIComponent(role)}`;
 
     console.log("Sending email to:", email);
 
