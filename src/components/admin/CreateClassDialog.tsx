@@ -23,7 +23,7 @@ import { useTrails } from '@/hooks/useTrails';
 import { useClasses } from '@/hooks/useClasses';
 
 export const CreateClassDialog = () => {
-  const { getUsersByRole, loading: usersLoading } = useUsers();
+  const { getUsersByRole, loading: usersLoading, error: usersError } = useUsers();
   const { getTrailOptions, loading: trailsLoading } = useTrails();
   const { createClass, loading: classLoading } = useClasses();
   const [open, setOpen] = useState(false);
@@ -36,6 +36,13 @@ export const CreateClassDialog = () => {
 
   const professors = getUsersByRole('professor');
   const trails = getTrailOptions();
+
+  console.log('CreateClassDialog state:', { 
+    usersLoading, 
+    usersError, 
+    professorsCount: professors.length,
+    professors 
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,18 +94,34 @@ export const CreateClassDialog = () => {
               value={formData.professorId}
               onValueChange={(value) => setFormData({ ...formData, professorId: value })}
               required
+              disabled={usersLoading}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Selecione um professor" />
+                <SelectValue placeholder={
+                  usersLoading 
+                    ? "Carregando professores..." 
+                    : professors.length === 0 
+                      ? "Nenhum professor encontrado" 
+                      : "Selecione um professor"
+                } />
               </SelectTrigger>
               <SelectContent>
-                {professors.map((professor) => (
-                  <SelectItem key={professor.id} value={professor.id}>
-                    {professor.name}
-                  </SelectItem>
-                ))}
+                {professors.length > 0 ? (
+                  professors.map((professor) => (
+                    <SelectItem key={professor.id} value={professor.id}>
+                      {professor.name}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <div className="p-2 text-sm text-muted-foreground">
+                    Nenhum professor cadastrado
+                  </div>
+                )}
               </SelectContent>
             </Select>
+            {usersError && (
+              <p className="text-sm text-destructive mt-1">{usersError}</p>
+            )}
           </div>
 
           <div>

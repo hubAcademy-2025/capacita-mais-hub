@@ -19,6 +19,7 @@ export const useUsers = () => {
     try {
       setLoading(true);
       setError(null);
+      console.log('Fetching users...');
       
       // Get all profiles with their roles using a proper join
       const { data: profiles, error: profilesError } = await supabase
@@ -32,8 +33,11 @@ export const useUsers = () => {
         `);
 
       if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
         throw profilesError;
       }
+
+      console.log('Profiles fetched:', profiles?.length || 0, profiles);
 
       // Get all user roles
       const { data: userRoles, error: rolesError } = await supabase
@@ -41,8 +45,11 @@ export const useUsers = () => {
         .select('user_id, role');
 
       if (rolesError) {
+        console.error('Error fetching roles:', rolesError);
         throw rolesError;
       }
+
+      console.log('User roles fetched:', userRoles?.length || 0, userRoles);
 
       // Transform the data to include roles as array
       const usersWithRoles = profiles?.map(profile => {
@@ -57,6 +64,7 @@ export const useUsers = () => {
         };
       }) || [];
 
+      console.log('Users with roles processed:', usersWithRoles.length, usersWithRoles);
       setUsers(usersWithRoles);
     } catch (err) {
       console.error('Error fetching users:', err);
@@ -71,7 +79,9 @@ export const useUsers = () => {
   }, []);
 
   const getUsersByRole = (role: string) => {
-    return users.filter(user => user.roles.includes(role));
+    const filteredUsers = users.filter(user => user.roles.includes(role));
+    console.log(`Users with role '${role}':`, filteredUsers.length, filteredUsers);
+    return filteredUsers;
   };
 
   const getUserStats = () => {
