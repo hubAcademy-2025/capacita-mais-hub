@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, FileText, CheckCircle, BookOpen, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Play, FileText, CheckCircle, BookOpen, ChevronRight, ChevronLeft } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,9 +10,11 @@ import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGrou
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useEnrollments } from '@/hooks/useEnrollments';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 export const AlunoSimpleContentViewerPage = () => {
   const { contentId } = useParams();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const { userProfile } = useSupabaseAuth();
   const { enrollments } = useEnrollments();
@@ -255,44 +257,82 @@ export const AlunoSimpleContentViewerPage = () => {
 
   const isCompleted = userProgress?.completed || false;
 
+  // Navigation functions
+  const navigateToContent = (direction: 'prev' | 'next') => {
+    const currentIndex = module.content.findIndex(c => c.id === contentId);
+    if (currentIndex === -1) return;
+
+    let targetIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
+    
+    if (targetIndex >= 0 && targetIndex < module.content.length) {
+      const targetContent = module.content[targetIndex];
+      navigate(`/aluno/content/${targetContent.id}`);
+    } else {
+      toast({
+        title: "Navegação",
+        description: direction === 'next' ? 'Este é o último conteúdo do módulo' : 'Este é o primeiro conteúdo do módulo',
+        variant: "destructive"
+      });
+    }
+  };
+
+  const canNavigatePrev = module.content.findIndex(c => c.id === contentId) > 0;
+  const canNavigateNext = module.content.findIndex(c => c.id === contentId) < module.content.length - 1;
+
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-background">
         <AppSidebar />
         
-        <main className="flex-1 flex flex-col">
+        <main className="flex-1 flex flex-col min-h-0">
           {/* Fixed Header */}
-          <header className="sticky top-0 z-50 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 border-b">
+          <header className="shrink-0 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 border-b">
             <div className="flex items-center justify-between p-4">
-              <div>
+              <div className="flex-1">
                 <h1 className="text-2xl font-bold">{content.title}</h1>
                 <p className="text-muted-foreground">
                   {trail.title} • {module.title}
                 </p>
               </div>
-              {isCompleted && (
-                <Badge variant="default" className="bg-green-500">
-                  <CheckCircle className="w-3 h-3 mr-1" />
-                  Concluído
-                </Badge>
-              )}
+              
+              {/* Navigation Controls */}
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigateToContent('prev')}
+                  disabled={!canNavigatePrev}
+                  className="flex items-center gap-1"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Anterior
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigateToContent('next')}
+                  disabled={!canNavigateNext}
+                  className="flex items-center gap-1"
+                >
+                  Próximo
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+                
+                {isCompleted && (
+                  <Badge variant="default" className="bg-green-500 ml-2">
+                    <CheckCircle className="w-3 h-3 mr-1" />
+                    Concluído
+                  </Badge>
+                )}
+              </div>
             </div>
           </header>
 
           {/* Content Area */}
-          <div className="flex-1 p-4 overflow-auto">
+          <div className="flex-1 p-4 overflow-auto min-h-0">
             <Card className="w-full max-w-4xl mx-auto">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  {content.type === 'video' && <Play className="w-5 h-5" />}
-                  {content.type === 'pdf' && <FileText className="w-5 h-5" />}
-                  {content.title}
-                </CardTitle>
-                {content.description && (
-                  <p className="text-muted-foreground">{content.description}</p>
-                )}
-              </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="p-6 space-y-4">
                 {(content.type === 'video' || content.type === 'live') && content.url && (
                   <div className="w-full aspect-video bg-black rounded-lg overflow-hidden">
                     <VideoPlayer
