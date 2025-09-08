@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { StatsCard } from '@/components/ui/stats-card';
 import { CreateTrailDialog } from '@/components/admin/CreateTrailDialog';
 import { EditTrailDialog } from '@/components/admin/EditTrailDialog';
-import { ManageTrailContentDialog } from '@/components/admin/ManageTrailContentDialog';
+import { ManageTrailContentDialogNew } from '@/components/admin/ManageTrailContentDialogNew';
 import { useTrails } from '@/hooks/useTrails';
 import type { TrailWithDetails } from '@/hooks/useTrails';
 
@@ -133,9 +133,9 @@ export const AdminTrilhasPage = () => {
                       <Button 
                         variant="default" 
                         size="sm"
-                        disabled
                         onClick={() => {
-                          // TODO: Implement when modules and content are ready
+                          setManageContentTrail(trail);
+                          setManageContentOpen(true);
                         }}
                       >
                         <Plus className="w-3 h-3 mr-1" />
@@ -170,8 +170,12 @@ export const AdminTrilhasPage = () => {
         />
       )}
 
-      {/* Manage Content Dialog - Temporarily disabled for Supabase version */}
-      {/* Will be implemented when modules and content tables are ready */}
+      {/* Manage Content Dialog */}
+      <ManageTrailContentDialogNew 
+        trail={manageContentTrail}
+        open={manageContentOpen}
+        onOpenChange={setManageContentOpen}
+      />
     </div>
   );
 };
