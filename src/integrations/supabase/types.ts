@@ -834,6 +834,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_public_profile: {
+        Args: { profile_id: string }
+        Returns: {
+          avatar_url: string
+          created_at: string
+          id: string
+          name: string
+        }[]
+      }
       get_user_roles: {
         Args: { user_uuid?: string }
         Returns: string[]
