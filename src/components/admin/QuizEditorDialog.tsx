@@ -362,9 +362,9 @@ export const QuizEditorDialog = ({ quiz, open, onOpenChange, onSave }: QuizEdito
                       <SelectValue placeholder="Selecione a resposta correta" />
                     </SelectTrigger>
                     <SelectContent>
-                      {currentQuestion.options?.map((option, index) => (
+                      {currentQuestion.options?.filter(option => option.trim()).map((option, index) => (
                         <SelectItem key={index} value={option}>
-                          {option || `Opção ${index + 1}`}
+                          {option}
                         </SelectItem>
                       ))}
                     </SelectContent>
