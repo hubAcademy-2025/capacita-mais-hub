@@ -8,9 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, Edit, Video, FileText, HelpCircle, Radio } from 'lucide-react';
+import { Plus, Trash2, Edit, Video, FileText, HelpCircle, Radio, AlertTriangle } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { useToast } from '@/hooks/use-toast';
+import { VideoPreview } from '@/components/admin/VideoPreview';
+import { validateVideoUrl, convertToEmbedUrl } from '@/utils/videoUtils';
 import type { Trail, Module, Content } from '@/types';
 
 interface ManageTrailContentDialogProps {
@@ -119,12 +121,31 @@ export const ManageTrailContentDialog = ({ trail, open, onOpenChange }: ManageTr
       return;
     }
 
+    // Validate video URL if it's a video content
+    if (contentForm.type === 'video' && contentForm.url && !validateVideoUrl(contentForm.url)) {
+      toast({
+        title: "URL de vídeo inválida",
+        description: "Por favor, use uma URL válida do YouTube ou Vimeo",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Convert video URL to embed format if it's a video
+    let processedUrl = contentForm.url;
+    if (contentForm.type === 'video' && contentForm.url) {
+      const videoInfo = convertToEmbedUrl(contentForm.url);
+      if (videoInfo.isValid && videoInfo.embedUrl) {
+        processedUrl = videoInfo.embedUrl;
+      }
+    }
+
     const newContent: Content = {
       id: crypto.randomUUID(),
       title: contentForm.title,
       description: contentForm.description,
       type: contentForm.type,
-      url: contentForm.url,
+      url: processedUrl,
       duration: contentForm.duration,
       order: contentForm.order,
     };
@@ -309,12 +330,18 @@ export const ManageTrailContentDialog = ({ trail, open, onOpenChange }: ManageTr
                               </div>
                               <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                  <Label>URL</Label>
+                                  <Label>URL {contentForm.type === 'video' && <span className="text-xs text-muted-foreground">(YouTube ou Vimeo)</span>}</Label>
                                   <Input
                                     value={contentForm.url}
                                     onChange={(e) => setContentForm(prev => ({ ...prev, url: e.target.value }))}
-                                    placeholder="Link do conteúdo"
+                                    placeholder={contentForm.type === 'video' ? "https://www.youtube.com/watch?v=..." : "Link do conteúdo"}
                                   />
+                                  {contentForm.type === 'video' && contentForm.url && !validateVideoUrl(contentForm.url) && (
+                                    <div className="flex items-center gap-1 text-xs text-destructive">
+                                      <AlertTriangle className="w-3 h-3" />
+                                      URL não suportada. Use YouTube ou Vimeo.
+                                    </div>
+                                  )}
                                 </div>
                                 <div className="space-y-2">
                                   <Label>Duração</Label>
@@ -325,6 +352,11 @@ export const ManageTrailContentDialog = ({ trail, open, onOpenChange }: ManageTr
                                   />
                                 </div>
                               </div>
+                              
+                              {/* Video Preview */}
+                              {contentForm.type === 'video' && contentForm.url && (
+                                <VideoPreview url={contentForm.url} title={contentForm.title} />
+                              )}
                               <div className="space-y-2">
                                 <Label>Descrição</Label>
                                 <Textarea

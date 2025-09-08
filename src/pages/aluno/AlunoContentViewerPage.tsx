@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { VideoPlayer } from '@/components/ui/video-player';
 import { useAppStore } from '@/store/useAppStore';
 
 export const AlunoContentViewerPage = () => {
@@ -132,27 +133,11 @@ export const AlunoContentViewerPage = () => {
       case 'video':
         return (
           <div className="space-y-4">
-            <div className="aspect-video bg-black rounded-lg overflow-hidden">
-              {content.url ? (
-                <iframe
-                  src={content.url}
-                  className="w-full h-full"
-                  allowFullScreen
-                  title={content.title}
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <div className="text-center text-white">
-                    <Play className="w-16 h-16 mx-auto mb-4" />
-                    <p className="text-lg font-medium">Vídeo</p>
-                    <p className="text-sm opacity-80">{content.title}</p>
-                    {content.duration && (
-                      <p className="text-xs opacity-60 mt-2">Duração: {content.duration}</p>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
+            <VideoPlayer
+              url={content.url || ''}
+              title={content.title}
+              duration={content.duration}
+            />
             
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
