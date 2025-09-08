@@ -42,6 +42,7 @@ export const CreateTrailDialog = ({ trigger }: CreateTrailDialogProps) => {
         certificate_type: formData.certificateType,
       });
 
+      // Reset form and close dialog
       setFormData({
         title: '',
         description: '',

@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { useAppStore } from '@/store/useAppStore';
+import { useTrails } from '@/hooks/useTrails';
 import { useToast } from '@/hooks/use-toast';
 import type { Trail } from '@/types';
 
@@ -26,7 +26,7 @@ export const EditTrailDialog = ({ trail, open, onOpenChange }: EditTrailDialogPr
     certificateType: 'trail' as 'trail' | 'module' | 'both',
     isBlocked: false,
   });
-  const { updateTrail } = useAppStore();
+  const { updateTrail, loading } = useTrails();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -43,7 +43,7 @@ export const EditTrailDialog = ({ trail, open, onOpenChange }: EditTrailDialogPr
     }
   }, [trail]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!trail || !formData.title || !formData.description || !formData.duration || !formData.level) {
@@ -55,27 +55,25 @@ export const EditTrailDialog = ({ trail, open, onOpenChange }: EditTrailDialogPr
       return;
     }
 
-    const updatedTrail: Trail = {
-      ...trail,
-      title: formData.title,
-      description: formData.description,
-      duration: formData.duration,
-      level: formData.level as 'Iniciante' | 'Intermediário' | 'Avançado',
-      certificateConfig: {
-        enabled: formData.certificateEnabled,
-        type: formData.certificateType,
-      },
-      isBlocked: formData.isBlocked,
-    };
+    try {
+      await updateTrail(trail.id, {
+        title: formData.title,
+        description: formData.description,
+        level: formData.level,
+        duration: formData.duration,
+        certificate_enabled: formData.certificateEnabled,
+        certificate_type: formData.certificateType,
+      });
 
-    updateTrail(updatedTrail);
-    
-    toast({
-      title: "Sucesso",
-      description: "Trilha atualizada com sucesso",
-    });
+      toast({
+        title: "Sucesso",
+        description: "Trilha atualizada com sucesso",
+      });
 
-    onOpenChange(false);
+      onOpenChange(false);
+    } catch (error) {
+      // Error already handled in updateTrail
+    }
   };
 
   return (
@@ -199,8 +197,8 @@ export const EditTrailDialog = ({ trail, open, onOpenChange }: EditTrailDialogPr
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit">
-              Salvar Alterações
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Salvando...' : 'Salvar Alterações'}
             </Button>
           </div>
         </form>

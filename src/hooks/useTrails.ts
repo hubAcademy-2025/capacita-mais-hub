@@ -135,6 +135,47 @@ export const useTrails = () => {
     }
   };
 
+  const updateTrail = async (trailId: string, trailData: {
+    title: string;
+    description?: string;
+    level: string;
+    duration?: string;
+    certificate_enabled?: boolean;
+    certificate_type?: string;
+  }) => {
+    try {
+      const { error } = await supabase
+        .from('trails')
+        .update({
+          title: trailData.title,
+          description: trailData.description,
+          level: trailData.level as any,
+          duration: trailData.duration,
+          certificate_enabled: trailData.certificate_enabled,
+          certificate_type: trailData.certificate_type as any
+        })
+        .eq('id', trailId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: "Trilha atualizada com sucesso!",
+      });
+
+      // Refresh data
+      await fetchTrails();
+    } catch (err) {
+      console.error('Error updating trail:', err);
+      toast({
+        title: "Erro",
+        description: "Erro ao atualizar trilha",
+        variant: "destructive",
+      });
+      throw err;
+    }
+  };
+
   const getTrailStats = () => {
     const totalModules = trails.reduce((acc, t) => acc + t.module_count, 0);
     const totalContent = trails.reduce((acc, t) => acc + t.content_count, 0);
@@ -160,6 +201,7 @@ export const useTrails = () => {
     loading,
     error,
     createTrail,
+    updateTrail,
     getTrailStats,
     getTrailOptions,
     refetch: fetchTrails

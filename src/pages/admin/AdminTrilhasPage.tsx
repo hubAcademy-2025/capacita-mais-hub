@@ -74,8 +74,9 @@ export const AdminTrilhasPage = () => {
                       <div>
                         <CardTitle className="text-lg">{trail.title}</CardTitle>
                         <Badge variant="outline" className="mt-2">
-                          {trail.level === 'beginner' ? 'Iniciante' : 
-                           trail.level === 'intermediate' ? 'Intermediário' : 'Avançado'}
+                          {trail.level === 'Iniciante' ? 'Iniciante' : 
+                           trail.level === 'Intermediário' ? 'Intermediário' : 
+                           trail.level === 'Avançado' ? 'Avançado' : trail.level}
                         </Badge>
                       </div>
                       <Badge variant="default">Ativa</Badge>
@@ -121,7 +122,10 @@ export const AdminTrilhasPage = () => {
                       <Button 
                         variant="outline" 
                         size="sm"
-                        disabled
+                        onClick={() => {
+                          setEditingTrail(trail);
+                          setEditDialogOpen(true);
+                        }}
                       >
                         <Edit className="w-3 h-3 mr-1" />
                         Editar Info
@@ -130,6 +134,9 @@ export const AdminTrilhasPage = () => {
                         variant="default" 
                         size="sm"
                         disabled
+                        onClick={() => {
+                          // TODO: Implement when modules and content are ready
+                        }}
                       >
                         <Plus className="w-3 h-3 mr-1" />
                         Gerenciar Conteúdo
@@ -143,7 +150,28 @@ export const AdminTrilhasPage = () => {
         </CardContent>
       </Card>
 
-      {/* Dialogs temporarily disabled - will be updated to work with real data */}
+      {/* Edit Trail Dialog */}
+      {editingTrail && (
+        <EditTrailDialog 
+          trail={{
+            id: editingTrail.id,
+            title: editingTrail.title,
+            description: editingTrail.description || '',
+            level: editingTrail.level as any,
+            duration: editingTrail.duration || '',
+            modules: [],
+            certificateConfig: {
+              enabled: editingTrail.certificate_enabled,
+              type: editingTrail.certificate_type as any
+            }
+          }}
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+        />
+      )}
+
+      {/* Manage Content Dialog - Temporarily disabled for Supabase version */}
+      {/* Will be implemented when modules and content tables are ready */}
     </div>
   );
 };
