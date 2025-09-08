@@ -13,11 +13,14 @@ import { AdminTrilhasPage } from "./pages/admin/AdminTrilhasPage";
 import { AdminUsuariosPage } from "./pages/admin/AdminUsuariosPage";
 import { AdminRelatoriosPage } from "./pages/admin/AdminRelatoriosPage";
 import { AdminClassDetailPage } from "./pages/admin/AdminClassDetailPage";
+import { AdminMeetingRoomPage } from "@/pages/admin/AdminMeetingRoomPage";
+import { AdminAttendanceReportsPage } from "@/pages/admin/AdminAttendanceReportsPage";
 import { ProfessorDashboard } from "@/pages/professor/ProfessorDashboard";
 import { ProfessorTurmasPage } from "@/pages/professor/ProfessorTurmasPage";
 import { ProfessorEncontrosPage } from "@/pages/professor/ProfessorEncontrosPage";
 import { ProfessorMeetingRoomPage } from "@/pages/professor/ProfessorMeetingRoomPage";
 import { ProfessorAnalyticsPage } from "@/pages/professor/ProfessorAnalyticsPage";
+import { ProfessorAttendanceReportsPage } from "@/pages/professor/ProfessorAttendanceReportsPage";
 import { AlunoDashboard } from "@/pages/aluno/AlunoDashboard";
 import { ClassroomPage } from "@/pages/aluno/ClassroomPage";
 import { AlunoTrilhaPage } from "@/pages/aluno/AlunoTrilhaPage";
@@ -29,7 +32,6 @@ import { ProfessorClassPage } from "@/pages/professor/ProfessorClassPage";
 import { ProfessorContentViewerPage } from "@/pages/professor/ProfessorContentViewerPage";
 import { ConfiguracoesPage } from "@/pages/ConfiguracoesPage";
 import { PerfilPage } from "@/pages/PerfilPage";
-import { AdminMeetingRoomPage } from "@/pages/admin/AdminMeetingRoomPage";
 import { useAppStore } from "@/store/useAppStore";
 import NotFound from "./pages/NotFound";
 
@@ -68,13 +70,15 @@ const App = () => (
                 <Layout title="Dashboard Administrativo" />
               </ProtectedRoute>
             }>
-            <Route index element={<AdminDashboard />} />
-            <Route path="turmas" element={<AdminTurmasPage />} />
-            <Route path="turmas/:classId" element={<AdminClassDetailPage />} />
-            <Route path="trilhas" element={<AdminTrilhasPage />} />
-            <Route path="usuarios" element={<AdminUsuariosPage />} />
-            <Route path="encontro/:meetingId" element={<AdminMeetingRoomPage />} />
-          </Route>
+              <Route index element={<AdminDashboard />} />
+              <Route path="turmas" element={<AdminTurmasPage />} />
+              <Route path="turmas/:classId" element={<AdminClassDetailPage />} />
+              <Route path="trilhas" element={<AdminTrilhasPage />} />
+              <Route path="usuarios" element={<AdminUsuariosPage />} />
+              <Route path="relatorios" element={<AdminRelatoriosPage />} />
+              <Route path="encontros/relatorios" element={<AdminAttendanceReportsPage />} />
+              <Route path="encontro/:meetingId" element={<AdminMeetingRoomPage />} />
+            </Route>
             
             {/* Protected Professor Routes */}
             <Route path="/professor" element={
@@ -82,14 +86,15 @@ const App = () => (
                 <Layout title="Dashboard do Professor" />
               </ProtectedRoute>
             }>
-            <Route index element={<ProfessorDashboard />} />
-            <Route path="turmas" element={<ProfessorTurmasPage />} />
-            <Route path="turma/:classId" element={<ProfessorClassPage />} />
-            <Route path="encontros" element={<ProfessorEncontrosPage />} />
-            <Route path="encontro/:meetingId" element={<ProfessorMeetingRoomPage />} />
-            <Route path="analytics" element={<ProfessorAnalyticsPage />} />
-            <Route path="content/:trailId/:moduleId/:contentId" element={<ProfessorContentViewerPage />} />
-          </Route>
+              <Route index element={<ProfessorDashboard />} />
+              <Route path="turmas" element={<ProfessorTurmasPage />} />
+              <Route path="turma/:classId" element={<ProfessorClassPage />} />
+              <Route path="encontros" element={<ProfessorEncontrosPage />} />
+              <Route path="encontros/relatorios" element={<ProfessorAttendanceReportsPage />} />
+              <Route path="encontro/:meetingId" element={<ProfessorMeetingRoomPage />} />
+              <Route path="analytics" element={<ProfessorAnalyticsPage />} />
+              <Route path="content/:trailId/:moduleId/:contentId" element={<ProfessorContentViewerPage />} />
+            </Route>
             
             {/* Protected Aluno Routes */}
             <Route path="/aluno" element={
@@ -97,13 +102,13 @@ const App = () => (
                 <Layout title="Meu Aprendizado" />
               </ProtectedRoute>
             }>
-            <Route index element={<AlunoDashboard />} />
-            <Route path="turma/:classId" element={<ClassroomPage />} />
-            <Route path="trilha" element={<AlunoTrilhaPage />} />
-            <Route path="encontros" element={<AlunoEncontrosPage />} />
-            <Route path="encontro/:meetingId" element={<AlunoMeetingRoomPage />} />
-            <Route path="progresso" element={<AlunoProgressoPage />} />
-          </Route>
+              <Route index element={<AlunoDashboard />} />
+              <Route path="turma/:classId" element={<ClassroomPage />} />
+              <Route path="trilha" element={<AlunoTrilhaPage />} />
+              <Route path="encontros" element={<AlunoEncontrosPage />} />
+              <Route path="encontro/:meetingId" element={<AlunoMeetingRoomPage />} />
+              <Route path="progresso" element={<AlunoProgressoPage />} />
+            </Route>
             
             {/* Protected Student Content Viewer */}
             <Route path="/aluno/turma/:classId/trilha/:trailId/modulo/:moduleId/conteudo/:contentId" element={
@@ -128,9 +133,9 @@ const App = () => (
               <Route index element={<PerfilPage />} />
             </Route>
           
-          {/* Catch-all route */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+            {/* Catch-all route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>

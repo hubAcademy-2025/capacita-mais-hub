@@ -1,6 +1,6 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Calendar, Users, Clock, Video, Plus } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { Calendar, Users, Clock, Video, Plus, BarChart } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -39,65 +39,69 @@ export const ProfessorEncontrosPage = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Meus Encontros</h1>
-          <p className="text-muted-foreground">Gerencie seus encontros e aulas ao vivo</p>
+          <p className="text-muted-foreground">Gerencie seus encontros e acompanhe a participação</p>
         </div>
-        <CreateMeetingDialog>
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            Agendar Encontro
+        <div className="flex gap-2">
+          <Button asChild variant="outline">
+            <Link to="/professor/encontros/relatorios">
+              <BarChart className="w-4 h-4 mr-2" />
+              Relatórios
+            </Link>
           </Button>
-        </CreateMeetingDialog>
+          <CreateMeetingDialog>
+            <Button>
+              <Plus className="w-4 h-4 mr-2" />
+              Agendar Encontro
+            </Button>
+          </CreateMeetingDialog>
+        </div>
       </div>
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-2xl font-bold text-primary">{upcomingMeetings.length}</p>
-                <p className="text-sm text-muted-foreground">Próximos Encontros</p>
-              </div>
-              <Calendar className="w-8 h-8 text-primary" />
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Próximos Encontros</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{upcomingMeetings.length}</div>
+            <p className="text-xs text-muted-foreground">Encontros agendados</p>
           </CardContent>
         </Card>
         
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-2xl font-bold text-success">{pastMeetings.length}</p>
-                <p className="text-sm text-muted-foreground">Realizados</p>
-              </div>
-              <Video className="w-8 h-8 text-success" />
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Encontros Realizados</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{pastMeetings.length}</div>
+            <p className="text-xs text-muted-foreground">Já concluídos</p>
           </CardContent>
         </Card>
         
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-2xl font-bold text-warning">{professorClasses.length}</p>
-                <p className="text-sm text-muted-foreground">Turmas Ativas</p>
-              </div>
-              <Users className="w-8 h-8 text-warning" />
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Turmas Ativas</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{professorClasses.length}</div>
+            <p className="text-xs text-muted-foreground">Suas turmas</p>
           </CardContent>
         </Card>
         
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-2xl font-bold text-accent">
-                  {professorMeetings.reduce((acc, m) => acc + m.duration, 0)}
-                </p>
-                <p className="text-sm text-muted-foreground">Min. Total</p>
-              </div>
-              <Clock className="w-8 h-8 text-accent" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Duração Total</CardTitle>
+            <Video className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {professorMeetings.reduce((acc, m) => acc + m.duration, 0)}
             </div>
+            <p className="text-xs text-muted-foreground">Minutos de encontros</p>
           </CardContent>
         </Card>
       </div>
@@ -113,7 +117,7 @@ export const ProfessorEncontrosPage = () => {
         <CardContent>
           <div className="space-y-4">
             {upcomingMeetings.map((meeting) => {
-              const classroom = getClassInfo(meeting.classId);
+              const classInfo = getClassInfo(meeting.classId);
               const isToday = new Date(meeting.dateTime).toDateString() === new Date().toDateString();
               
               return (
@@ -124,10 +128,7 @@ export const ProfessorEncontrosPage = () => {
                     </div>
                     <div>
                       <h3 className="font-medium">{meeting.title}</h3>
-                      <p className="text-sm text-muted-foreground">{classroom?.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {classroom?.studentIds.length} alunos matriculados
-                      </p>
+                      <p className="text-sm text-muted-foreground">{classInfo?.name}</p>
                       <div className="flex items-center gap-4 mt-1">
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Calendar className="w-3 h-3" />
@@ -140,6 +141,10 @@ export const ProfessorEncontrosPage = () => {
                             minute: '2-digit' 
                           })} ({meeting.duration}min)
                         </div>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Users className="w-3 h-3" />
+                          {classInfo?.studentIds.length} alunos
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -148,14 +153,10 @@ export const ProfessorEncontrosPage = () => {
                       <Badge variant="destructive" className="mr-2">Hoje</Badge>
                     )}
                     <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={() => {
-                        if (isToday) {
-                          navigate(`/professor/encontro/${meeting.id}`);
-                        }
-                      }}
-                      disabled={!isToday}
+                      size="sm"
+                      variant={isToday ? "default" : "outline"}
+                      onClick={() => navigate(`/professor/encontro/${meeting.id}`)}
+                      className={isToday ? "bg-success hover:bg-success/90" : ""}
                     >
                       {isToday ? 'Iniciar Encontro' : 'Ver Detalhes'}
                     </Button>
@@ -168,7 +169,7 @@ export const ProfessorEncontrosPage = () => {
               <div className="text-center py-8 text-muted-foreground">
                 <Calendar className="w-12 h-12 mx-auto mb-4" />
                 <h3 className="font-medium mb-2">Nenhum encontro agendado</h3>
-                <p className="text-sm">Agende encontros para suas turmas.</p>
+                <p className="text-sm">Agende um encontro para suas turmas.</p>
               </div>
             )}
           </div>
@@ -180,13 +181,13 @@ export const ProfessorEncontrosPage = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Clock className="w-5 h-5" />
-            Encontros Realizados ({pastMeetings.length})
+            Encontros Realizados ({pastMeetings.length > 10 ? '10+' : pastMeetings.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {pastMeetings.slice(0, 10).map((meeting) => {
-              const classroom = getClassInfo(meeting.classId);
+              const classInfo = getClassInfo(meeting.classId);
               
               return (
                 <div key={meeting.id} className="flex items-center justify-between p-4 border rounded-lg opacity-75">
@@ -196,10 +197,7 @@ export const ProfessorEncontrosPage = () => {
                     </div>
                     <div>
                       <h3 className="font-medium">{meeting.title}</h3>
-                      <p className="text-sm text-muted-foreground">{classroom?.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {classroom?.studentIds.length} alunos
-                      </p>
+                      <p className="text-sm text-muted-foreground">{classInfo?.name}</p>
                       <div className="flex items-center gap-4 mt-1">
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Calendar className="w-3 h-3" />
@@ -208,6 +206,10 @@ export const ProfessorEncontrosPage = () => {
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Clock className="w-3 h-3" />
                           {meeting.duration}min
+                        </div>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Users className="w-3 h-3" />
+                          {meeting.attendanceList?.length || 0} participantes
                         </div>
                       </div>
                     </div>

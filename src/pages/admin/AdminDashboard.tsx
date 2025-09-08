@@ -1,4 +1,6 @@
-import { Users, BookOpen, GraduationCap, TrendingUp, Plus } from 'lucide-react';
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Users, BookOpen, GraduationCap, TrendingUp, Plus, BarChart } from 'lucide-react';
 import { StatsCard } from '@/components/ui/stats-card';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,13 +22,22 @@ export const AdminDashboard = () => {
           <h1 className="text-3xl font-bold text-foreground">Dashboard Administrativo</h1>
           <p className="text-muted-foreground">Gerencie turmas, usuários e encontros</p>
         </div>
-        <CreateMeetingDialog>
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            Agendar Encontro
+        <div className="flex gap-2">
+          <Button asChild variant="outline">
+            <Link to="/admin/encontros/relatorios">
+              <BarChart className="w-4 h-4 mr-2" />
+              Relatórios
+            </Link>
           </Button>
-        </CreateMeetingDialog>
+          <CreateMeetingDialog>
+            <Button>
+              <Plus className="w-4 h-4 mr-2" />
+              Agendar Encontro
+            </Button>
+          </CreateMeetingDialog>
+        </div>
       </div>
+      
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatsCard
