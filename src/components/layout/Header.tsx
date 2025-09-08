@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useAppStore } from '@/store/useAppStore';
 import { useAuth } from '@/contexts/AuthContext';
-import { users } from '@/data/mockData';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { NotificationPanel } from './NotificationPanel';
 
 interface HeaderProps {
@@ -20,8 +20,9 @@ interface HeaderProps {
 }
 
 export const Header = ({ title }: HeaderProps) => {
-  const { currentUser, currentRole, setCurrentUser, notifications } = useAppStore();
+  const { currentUser, currentRole, notifications } = useAppStore();
   const { signOut } = useAuth();
+  const { userProfile, switchRole } = useSupabaseAuth();
   const [showNotifications, setShowNotifications] = useState(false);
   const navigate = useNavigate();
   
@@ -29,14 +30,14 @@ export const Header = ({ title }: HeaderProps) => {
   const unreadCount = userNotifications.filter(n => !n.isRead).length;
 
   const handleRoleChange = (role: 'admin' | 'professor' | 'aluno') => {
-    const user = users.find(u => u.role === role);
-    if (user) {
-      setCurrentUser(user);
-      // Navigate to appropriate dashboard
-      const basePath = role === 'admin' ? '/admin' : role === 'professor' ? '/professor' : '/aluno';
-      navigate(basePath);
-    }
+    switchRole(role);
+    // Navigate to appropriate dashboard
+    const basePath = role === 'admin' ? '/admin' : role === 'professor' ? '/professor' : '/aluno';
+    navigate(basePath);
   };
+
+  // Only show roles that the user actually has
+  const availableRoles = userProfile?.roles || [];
 
   const getRoleName = (role: string) => {
     switch (role) {
@@ -87,29 +88,37 @@ export const Header = ({ title }: HeaderProps) => {
             />
           </div>
 
-          {/* Role Switcher (for demo) */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                {getRoleName(currentRole)}
-                <ChevronDown className="w-4 h-4 ml-2" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem onClick={() => handleRoleChange('admin')}>
-                <User className="w-4 h-4 mr-2" />
-                Administrador
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleRoleChange('professor')}>
-                <User className="w-4 h-4 mr-2" />
-                Professor
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleRoleChange('aluno')}>
-                <User className="w-4 h-4 mr-2" />
-                Aluno
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* Role Switcher - Only show if user has multiple roles */}
+          {availableRoles.length > 1 && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  {getRoleName(currentRole)}
+                  <ChevronDown className="w-4 h-4 ml-2" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                {availableRoles.includes('admin') && (
+                  <DropdownMenuItem onClick={() => handleRoleChange('admin')}>
+                    <User className="w-4 h-4 mr-2" />
+                    Administrador
+                  </DropdownMenuItem>
+                )}
+                {availableRoles.includes('professor') && (
+                  <DropdownMenuItem onClick={() => handleRoleChange('professor')}>
+                    <User className="w-4 h-4 mr-2" />
+                    Professor
+                  </DropdownMenuItem>
+                )}
+                {availableRoles.includes('aluno') && (
+                  <DropdownMenuItem onClick={() => handleRoleChange('aluno')}>
+                    <User className="w-4 h-4 mr-2" />
+                    Aluno
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
 
           {/* User Menu */}
           <DropdownMenu>
