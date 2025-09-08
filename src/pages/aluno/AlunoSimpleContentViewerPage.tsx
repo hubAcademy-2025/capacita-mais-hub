@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { VideoPlayer } from '@/components/ui/video-player';
 import { QuizPlayer } from '@/components/ui/quiz-player';
-import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider } from '@/components/ui/sidebar';
+import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useEnrollments } from '@/hooks/useEnrollments';
 import { supabase } from '@/integrations/supabase/client';
@@ -149,14 +149,17 @@ export const AlunoSimpleContentViewerPage = () => {
   };
 
   const AppSidebar = () => (
-    <Sidebar className="w-80 border-r">
+    <Sidebar className="w-80 border-r bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
+      <div className="sticky top-0 z-10 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
+        <SidebarTrigger className="m-4" />
+      </div>
       <SidebarContent>
-        <div className="p-4 border-b">
+        <div className="p-4 border-b bg-card">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate('/aluno/trilhas')}
-            className="mb-2"
+            className="mb-2 w-full justify-start"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Voltar às Trilhas
@@ -184,11 +187,11 @@ export const AlunoSimpleContentViewerPage = () => {
                     <SidebarMenuItem key={contentItem.id}>
                       <SidebarMenuButton 
                         asChild
-                        className={isActive ? "bg-muted text-primary font-medium" : "hover:bg-muted/50"}
+                        className={`${isActive ? "bg-primary/10 text-primary font-medium border-r-2 border-primary" : "hover:bg-muted/50"} relative z-10`}
                       >
                         <button
                           onClick={() => navigate(`/aluno/content/${contentItem.id}`)}
-                          className="w-full flex items-center gap-2 text-left"
+                          className="w-full flex items-center gap-2 text-left p-2 rounded"
                         >
                           <Icon className="w-4 h-4" />
                           <span className="truncate">{contentItem.title}</span>
@@ -254,72 +257,76 @@ export const AlunoSimpleContentViewerPage = () => {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full">
+      <div className="flex min-h-screen w-full bg-background">
         <AppSidebar />
         
-        <main className="flex-1 p-6 space-y-6">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold">{content.title}</h1>
-              <p className="text-muted-foreground">
-                {trail.title} • {module.title}
-              </p>
+        <main className="flex-1 relative">
+          {/* Fixed Header */}
+          <div className="sticky top-0 z-30 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 border-b">
+            <div className="flex items-center justify-between p-6">
+              <div>
+                <h1 className="text-2xl font-bold">{content.title}</h1>
+                <p className="text-muted-foreground">
+                  {trail.title} • {module.title}
+                </p>
+              </div>
+              {isCompleted && (
+                <Badge variant="default" className="bg-green-500">
+                  <CheckCircle className="w-3 h-3 mr-1" />
+                  Concluído
+                </Badge>
+              )}
             </div>
-            {isCompleted && (
-              <Badge variant="default" className="bg-green-500">
-                <CheckCircle className="w-3 h-3 mr-1" />
-                Concluído
-              </Badge>
-            )}
           </div>
 
           {/* Content */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                {content.type === 'video' && <Play className="w-5 h-5" />}
-                {content.type === 'pdf' && <FileText className="w-5 h-5" />}
-                {content.title}
-              </CardTitle>
-              {content.description && (
-                <p className="text-muted-foreground">{content.description}</p>
-              )}
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {(content.type === 'video' || content.type === 'live') && content.url && (
-                <VideoPlayer
-                  url={content.url}
-                  title={content.title}
-                />
-              )}
+          <div className="p-6">
+            <Card className="relative z-10">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  {content.type === 'video' && <Play className="w-5 h-5" />}
+                  {content.type === 'pdf' && <FileText className="w-5 h-5" />}
+                  {content.title}
+                </CardTitle>
+                {content.description && (
+                  <p className="text-muted-foreground">{content.description}</p>
+                )}
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {(content.type === 'video' || content.type === 'live') && content.url && (
+                  <VideoPlayer
+                    url={content.url}
+                    title={content.title}
+                  />
+                )}
 
-              {content.type === 'quiz' && content.quiz && (
-                <QuizPlayer
-                  quiz={content.quiz}
-                  onComplete={(score, answers) => {
-                    console.log('Quiz completed:', { score, answers });
-                    markAsCompleted();
-                  }}
-                  onMarkCompleted={markAsCompleted}
-                />
-              )}
+                {content.type === 'quiz' && content.quiz && (
+                  <QuizPlayer
+                    quiz={content.quiz}
+                    onComplete={(score, answers) => {
+                      console.log('Quiz completed:', { score, answers });
+                      markAsCompleted();
+                    }}
+                    onMarkCompleted={markAsCompleted}
+                  />
+                )}
 
-              {content.type === 'pdf' && content.description && (
-                <div className="prose max-w-none">
-                  <div className="whitespace-pre-wrap">{content.description}</div>
-                  {!isCompleted && (
-                    <div className="mt-6">
-                      <Button onClick={markAsCompleted}>
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                        Marcar como Concluído
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                {content.type === 'pdf' && content.description && (
+                  <div className="prose max-w-none">
+                    <div className="whitespace-pre-wrap">{content.description}</div>
+                    {!isCompleted && (
+                      <div className="mt-6">
+                        <Button onClick={markAsCompleted}>
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Marcar como Concluído
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </main>
       </div>
     </SidebarProvider>

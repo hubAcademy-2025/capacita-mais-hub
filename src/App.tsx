@@ -210,9 +210,7 @@ const App: React.FC = () => {
           } />
            <Route path="/aluno/content/:contentId" element={
              <ProtectedRoute>
-               <Layout>
-                 <AlunoSimpleContentViewerPage />
-               </Layout>
+               <AlunoSimpleContentViewerPage />
              </ProtectedRoute>
            } />
           <Route path="/aluno/meeting/:meetingId" element={
