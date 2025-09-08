@@ -53,7 +53,7 @@ export const Header = ({ title }: HeaderProps) => {
   };
 
   return (
-    <header className="bg-card border-b border-border px-6 py-4 relative z-10 ml-64">
+    <header className="bg-card border-b border-border px-6 py-4 relative z-10 ml-64 w-full">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{title}</h1>
