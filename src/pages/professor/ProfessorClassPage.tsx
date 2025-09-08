@@ -6,9 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   Users, 
   BarChart3, 
@@ -16,12 +14,12 @@ import {
   MessageCircle, 
   BookOpen,
   Plus,
-  Edit,
   CheckCircle,
   Clock
 } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { CommunityTab } from '@/components/aluno/CommunityTab';
+import { VideoProgressDetail } from '@/components/professor/VideoProgressDetail';
 import { Meeting } from '@/types';
 
 export const ProfessorClassPage = () => {
@@ -47,7 +45,14 @@ export const ProfessorClassPage = () => {
   const classroom = classes.find(c => c.id === classId);
   const classEnrollments = enrollments.filter(e => e.classId === classId);
   const classMeetings = meetings.filter(m => m.classId === classId);
-  const trail = classroom ? trails.find(t => t.id === classroom.trailId) : null;
+  
+  // Fix trail finding logic - handle both new and old format
+  const classTrails = classroom ? trails.filter(t => 
+    classroom.trailIds?.includes(t.id) || 
+    // @ts-ignore - backward compatibility
+    classroom.trailId === t.id
+  ) : [];
+  const trail = classTrails[0]; // Get first trail for now
 
   if (!classroom || 
       !(classroom.professorIds?.includes(currentUser?.id || '') || 
@@ -70,10 +75,7 @@ export const ProfessorClassPage = () => {
   const students = users.filter(u => classroom.studentIds.includes(u.id));
 
   const handleCreateMeeting = () => {
-    console.log('Creating meeting...', { newMeetingTitle, newMeetingDate, newMeetingTime });
-    
     if (!newMeetingTitle || !newMeetingDate || !newMeetingTime) {
-      console.log('Missing required fields');
       return;
     }
 
@@ -90,9 +92,7 @@ export const ProfessorClassPage = () => {
       participantTypes: ['students']
     };
 
-    console.log('Meeting object created:', meeting);
     addMeeting(meeting);
-    console.log('Meeting added to store');
     
     setNewMeetingTitle('');
     setNewMeetingDate('');
@@ -146,15 +146,19 @@ export const ProfessorClassPage = () => {
       </Card>
 
       {/* Tabs */}
-      <Tabs defaultValue="alunos" className="w-full">
+      <Tabs defaultValue="trilhas" className="w-full">
         <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="trilhas" className="flex items-center gap-2">
+            <BookOpen className="w-4 h-4" />
+            Trilhas e Progresso
+          </TabsTrigger>
           <TabsTrigger value="alunos" className="flex items-center gap-2">
             <Users className="w-4 h-4" />
             Alunos
           </TabsTrigger>
           <TabsTrigger value="acompanhamento" className="flex items-center gap-2">
             <BarChart3 className="w-4 h-4" />
-            Acompanhamento
+            Matriz de Progresso
           </TabsTrigger>
           <TabsTrigger value="comunidade" className="flex items-center gap-2">
             <MessageCircle className="w-4 h-4" />
@@ -164,11 +168,28 @@ export const ProfessorClassPage = () => {
             <Calendar className="w-4 h-4" />
             Encontros
           </TabsTrigger>
-          <TabsTrigger value="trilhas" className="flex items-center gap-2">
-            <BookOpen className="w-4 h-4" />
-            Trilhas
-          </TabsTrigger>
         </TabsList>
+
+        {/* Trails and Video Progress Tab */}
+        <TabsContent value="trilhas" className="mt-6">
+          {trail ? (
+            <VideoProgressDetail 
+              trail={trail} 
+              students={students} 
+              classId={classroom.id} 
+            />
+          ) : (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <BookOpen className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="font-medium mb-2">Nenhuma trilha associada</h3>
+                <p className="text-sm text-muted-foreground">
+                  Esta turma ainda não possui uma trilha de aprendizado.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
 
         {/* Students Tab */}
         <TabsContent value="alunos" className="mt-6">
@@ -395,50 +416,6 @@ export const ProfessorClassPage = () => {
               </CardContent>
             </Card>
           </div>
-        </TabsContent>
-
-        {/* Trails Tab */}
-        <TabsContent value="trilhas" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Trilha da Turma</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {trail ? (
-                <div className="space-y-4">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="text-lg font-semibold">{trail.title}</h3>
-                      <p className="text-muted-foreground mt-1">{trail.description}</p>
-                      <div className="flex items-center gap-4 mt-2">
-                        <Badge variant="outline">{trail.level}</Badge>
-                        <span className="text-sm text-muted-foreground">{trail.duration}</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <h4 className="font-medium">Módulos ({trail.modules.length})</h4>
-                    {trail.modules.map((module) => (
-                      <div key={module.id} className="p-3 border rounded-lg">
-                        <h5 className="font-medium">{module.title}</h5>
-                        <p className="text-sm text-muted-foreground mt-1">{module.description}</p>
-                        <p className="text-xs text-muted-foreground mt-2">
-                          {module.content.length} conteúdos
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <BookOpen className="w-12 h-12 mx-auto mb-4" />
-                  <h3 className="font-medium mb-2">Nenhuma trilha associada</h3>
-                  <p className="text-sm">Esta turma ainda não possui uma trilha de aprendizado.</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
         </TabsContent>
       </Tabs>
     </div>
