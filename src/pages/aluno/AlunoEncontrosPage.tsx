@@ -20,11 +20,13 @@ export const AlunoEncontrosPage = () => {
   ).sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime());
 
   const upcomingMeetings = allMeetings.filter(m => 
-    new Date(m.dateTime) > new Date() && m.status === 'scheduled'
+    (new Date(m.dateTime) > new Date() && m.status === 'scheduled') ||
+    (m.status === 'live')
   );
 
   const pastMeetings = allMeetings.filter(m => 
-    new Date(m.dateTime) <= new Date() || m.status === 'completed'
+    (new Date(m.dateTime) <= new Date() && m.status === 'scheduled') || 
+    m.status === 'completed'
   );
 
   const getClassInfo = (classId: string) => {
@@ -57,12 +59,15 @@ export const AlunoEncontrosPage = () => {
             {upcomingMeetings.map((meeting) => {
               const { classroom, professor } = getClassInfo(meeting.classId);
               const isToday = new Date(meeting.dateTime).toDateString() === new Date().toDateString();
+              const isLive = meeting.status === 'live';
               
               return (
                 <div key={meeting.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-primary-light rounded-lg flex items-center justify-center">
-                      <Video className="w-6 h-6 text-primary" />
+                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                      isLive ? 'bg-red-100 animate-pulse' : 'bg-primary-light'
+                    }`}>
+                      <Video className={`w-6 h-6 ${isLive ? 'text-red-600' : 'text-primary'}`} />
                     </div>
                     <div>
                       <h3 className="font-medium">{meeting.title}</h3>
@@ -84,16 +89,19 @@ export const AlunoEncontrosPage = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    {isToday && (
+                    {isLive && (
+                      <Badge variant="destructive" className="mr-2 bg-red-500">AO VIVO</Badge>
+                    )}
+                    {isToday && !isLive && (
                       <Badge variant="destructive" className="mr-2">Hoje</Badge>
                     )}
                     <Button 
                       size="sm"
-                      variant={isToday ? "default" : "outline"}
+                      variant={isLive || isToday ? "default" : "outline"}
                       onClick={() => navigate(`/aluno/encontro/${meeting.id}`)}
-                      className={isToday ? "bg-success hover:bg-success/90" : ""}
+                      className={isLive ? "bg-red-500 hover:bg-red-600" : isToday ? "bg-success hover:bg-success/90" : ""}
                     >
-                      {isToday ? 'Entrar' : 'Detalhes'}
+                      {isLive ? 'Entrar AO VIVO' : isToday ? 'Entrar' : 'Detalhes'}
                     </Button>
                   </div>
                 </div>
