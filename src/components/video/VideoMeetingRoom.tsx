@@ -37,16 +37,33 @@ export const VideoMeetingRoom: React.FC<VideoMeetingRoomProps> = ({
   useEffect(() => {
     // Load Jitsi Meet API
     const script = document.createElement('script');
-    script.src = 'https://meet.jit.si/external_api.js';
+    script.src = 'https://8x8.vc/vpaas-magic-cookie-1234567890abcdef/external_api.js';
     script.async = true;
     script.onload = initializeJitsi;
+    script.onerror = () => {
+      // Fallback to meet.jit.si
+      const fallbackScript = document.createElement('script');
+      fallbackScript.src = 'https://meet.jit.si/external_api.js';
+      fallbackScript.async = true;
+      fallbackScript.onload = initializeJitsi;
+      fallbackScript.onerror = () => {
+        toast({
+          title: "Erro ao carregar video conferência",
+          description: "Não foi possível carregar o sistema de videoconferência",
+          variant: "destructive",
+        });
+      };
+      document.head.appendChild(fallbackScript);
+    };
     document.head.appendChild(script);
 
     return () => {
       if (jitsiApi) {
         jitsiApi.dispose();
       }
-      document.head.removeChild(script);
+      // Clean up scripts
+      const scripts = document.querySelectorAll('script[src*="external_api.js"]');
+      scripts.forEach(s => s.remove());
     };
   }, []);
 
@@ -85,7 +102,7 @@ export const VideoMeetingRoom: React.FC<VideoMeetingRoomProps> = ({
       }
     };
 
-    const api = new window.JitsiMeetExternalAPI('meet.jit.si', options);
+    const api = new window.JitsiMeetExternalAPI('8x8.vc', options);
     setJitsiApi(api);
 
     // Event listeners
