@@ -3,21 +3,48 @@ import { Play, AlertCircle, ExternalLink } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { convertToEmbedUrl, getVideoThumbnail } from '@/utils/videoUtils';
+import { convertToEmbedUrl, getVideoThumbnail, extractYouTubeId } from '@/utils/videoUtils';
+import { YouTubePlayerComponent } from './youtube-player';
 
 interface VideoPlayerProps {
   url: string;
   title: string;
   duration?: string;
   className?: string;
+  contentId?: string;
+  userId?: string;
+  enableTracking?: boolean;
 }
 
-export const VideoPlayer = ({ url, title, duration, className = '' }: VideoPlayerProps) => {
+export const VideoPlayer = ({ 
+  url, 
+  title, 
+  duration, 
+  className = '', 
+  contentId, 
+  userId, 
+  enableTracking = false 
+}: VideoPlayerProps) => {
   const [hasError, setHasError] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   
   const videoInfo = convertToEmbedUrl(url);
   const thumbnail = getVideoThumbnail(url);
+  const youtubeId = extractYouTubeId(url);
+
+  // Use YouTube Player with tracking if enabled and it's a YouTube video
+  if (enableTracking && youtubeId && contentId && userId) {
+    return (
+      <YouTubePlayerComponent
+        url={url}
+        title={title}
+        duration={duration}
+        className={className}
+        contentId={contentId}
+        userId={userId}
+      />
+    );
+  }
 
   if (!url) {
     return (

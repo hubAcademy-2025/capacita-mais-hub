@@ -130,31 +130,34 @@ export const AlunoContentViewerPage = () => {
 
   const renderContent = () => {
     switch (content.type) {
-      case 'video':
-        return (
-          <div className="space-y-4">
-            <VideoPlayer
-              url={content.url || ''}
-              title={content.title}
-              duration={content.duration}
-            />
-            
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Status:</span>
-                <Badge variant={userContentProgress?.completed ? "default" : "secondary"}>
-                  {userContentProgress?.completed ? "Concluído" : "Em andamento"}
-                </Badge>
-              </div>
+        case 'video':
+          return (
+            <div className="space-y-4">
+              <VideoPlayer
+                url={content.url || ''}
+                title={content.title}
+                duration={content.duration}
+                contentId={content.id}
+                userId={currentUser?.id}
+                enableTracking={true}
+              />
               
-              {!userContentProgress?.completed && (
-                <Button onClick={markContentAsCompleted} size="sm">
-                  Marcar como Concluído
-                </Button>
-              )}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Status:</span>
+                  <Badge variant={userContentProgress?.completed ? "default" : "secondary"}>
+                    {userContentProgress?.completed ? "Concluído" : "Em andamento"}
+                  </Badge>
+                </div>
+                
+                {!userContentProgress?.completed && (
+                  <Button onClick={markContentAsCompleted} size="sm" variant="outline">
+                    Marcar como Concluído Manualmente
+                  </Button>
+                )}
+              </div>
             </div>
-          </div>
-        );
+          );
       
       case 'pdf':
         return (
