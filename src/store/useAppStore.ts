@@ -28,6 +28,11 @@ interface AppState {
   toggleSidebar: () => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
   
+  // User management
+  addUser: (user: User) => void;
+  updateUser: (user: User) => void;
+  deleteUser: (userId: string) => void;
+  
   // Data management
   addClass: (newClass: Class) => void;
   updateClass: (classId: string, updates: Partial<Class>) => void;
@@ -76,6 +81,19 @@ export const useAppStore = create<AppState>((set, get) => ({
   setCurrentRole: (role) => set({ currentRole: role }),
   toggleSidebar: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
   setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
+  
+  // User management
+  addUser: (user) => set((state) => ({
+    users: [...state.users, user]
+  })),
+  
+  updateUser: (user) => set((state) => ({
+    users: state.users.map(u => u.id === user.id ? user : u)
+  })),
+  
+  deleteUser: (userId) => set((state) => ({
+    users: state.users.filter(u => u.id !== userId)
+  })),
   
   // Data management
   addClass: (newClass) => set((state) => ({ 

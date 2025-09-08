@@ -1,13 +1,22 @@
-import { Users, Plus, UserCheck, GraduationCap, Building } from 'lucide-react';
+import { useState } from 'react';
+import { Users, Plus, UserCheck, GraduationCap, Building, Edit } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { StatsCard } from '@/components/ui/stats-card';
 import { useAppStore } from '@/store/useAppStore';
+import { CreateUserDialog } from '@/components/admin/CreateUserDialog';
+import { EditUserDialog } from '@/components/admin/EditUserDialog';
+import { ManageUserDialog } from '@/components/admin/ManageUserDialog';
+import type { User } from '@/types';
 
 export const AdminUsuariosPage = () => {
   const { users, classes, enrollments } = useAppStore();
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [manageUser, setManageUser] = useState<User | null>(null);
+  const [manageDialogOpen, setManageDialogOpen] = useState(false);
 
   const getUserStats = () => {
     const admins = users.filter(u => u.role === 'admin').length;
@@ -67,10 +76,7 @@ export const AdminUsuariosPage = () => {
           <h1 className="text-3xl font-bold text-foreground">Gestão de Usuários</h1>
           <p className="text-muted-foreground">Gerencie todos os usuários da plataforma</p>
         </div>
-        <Button onClick={() => alert('Funcionalidade de criar usuário será implementada')}>
-          <Plus className="w-4 h-4 mr-2" />
-          Novo Usuário
-        </Button>
+        <CreateUserDialog />
       </div>
 
       {/* Stats Grid */}
@@ -122,7 +128,15 @@ export const AdminUsuariosPage = () => {
                       <p className="text-xs text-muted-foreground">{user.email}</p>
                     </div>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={() => alert('Funcionalidade de editar usuário será implementada')}>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => {
+                      setEditingUser(user);
+                      setEditDialogOpen(true);
+                    }}
+                  >
+                    <Edit className="w-3 h-3 mr-1" />
                     Editar
                   </Button>
                 </div>
@@ -155,7 +169,15 @@ export const AdminUsuariosPage = () => {
                       <p className="text-xs text-muted-foreground">{getUserClassInfo(user)}</p>
                     </div>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={() => alert('Funcionalidade de editar usuário será implementada')}>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => {
+                      setEditingUser(user);
+                      setEditDialogOpen(true);
+                    }}
+                  >
+                    <Edit className="w-3 h-3 mr-1" />
                     Editar
                   </Button>
                 </div>
@@ -188,7 +210,15 @@ export const AdminUsuariosPage = () => {
                       <p className="text-xs text-muted-foreground">{getUserClassInfo(user)}</p>
                     </div>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={() => alert('Funcionalidade de editar usuário será implementada')}>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => {
+                      setEditingUser(user);
+                      setEditDialogOpen(true);
+                    }}
+                  >
+                    <Edit className="w-3 h-3 mr-1" />
                     Editar
                   </Button>
                 </div>
@@ -224,7 +254,14 @@ export const AdminUsuariosPage = () => {
                     {getRoleIcon(user.role)}
                     {getRoleName(user.role)}
                   </Badge>
-                  <Button variant="outline" size="sm" onClick={() => alert('Funcionalidade de gerenciar usuário será implementada')}>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => {
+                      setManageUser(user);
+                      setManageDialogOpen(true);
+                    }}
+                  >
                     Gerenciar
                   </Button>
                 </div>
@@ -233,6 +270,23 @@ export const AdminUsuariosPage = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Dialogs */}
+      <EditUserDialog 
+        user={editingUser}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+      />
+      
+      <ManageUserDialog 
+        user={manageUser}
+        open={manageDialogOpen}
+        onOpenChange={setManageDialogOpen}
+        onEdit={(user) => {
+          setEditingUser(user);
+          setEditDialogOpen(true);
+        }}
+      />
     </div>
   );
 };
