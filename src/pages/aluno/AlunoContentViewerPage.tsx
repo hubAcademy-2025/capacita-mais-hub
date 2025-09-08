@@ -115,7 +115,7 @@ export const AlunoContentViewerPage = () => {
   };
 
   const navigateToContent = (modId: string, contId: string) => {
-    navigate(`/aluno/turma/${classId}/trilha/${trailId}/modulo/${modId}/conteudo/${contId}`);
+    navigate(`/aluno/content/${contId}`);
   };
 
   const nextContent = getNextContent();

@@ -155,7 +155,7 @@ export const AlunoTrilhaPage = () => {
                         const firstModule = trail.modules[0];
                         if (firstModule.content.length > 0) {
                           const firstContent = firstModule.content[0];
-                          window.location.href = `/aluno/turma/${classroom.id}/trilha/${trail.id}/modulo/${firstModule.id}/conteudo/${firstContent.id}`;
+                          window.location.href = `/aluno/content/${firstContent.id}`;
                         }
                       }
                     }}>

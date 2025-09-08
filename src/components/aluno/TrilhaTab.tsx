@@ -50,7 +50,7 @@ export const TrilhaTab = ({ trails }: TrilhaTabProps) => {
     
     if (trailClass) {
       // Navigate to the content viewer page
-      window.location.href = `/aluno/turma/${trailClass.id}/trilha/${trail.id}/modulo/${module.id}/conteudo/${content.id}`;
+      window.location.href = `/aluno/content/${content.id}`;
     } else {
       // Fallback to content selection if no class found
       setSelectedContent(content);

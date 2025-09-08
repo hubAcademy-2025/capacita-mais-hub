@@ -70,7 +70,7 @@ export const ClassroomPage = () => {
       const firstModule = trail.modules[0];
       if (firstModule.content.length > 0) {
         const firstContent = firstModule.content[0];
-        navigate(`/aluno/turma/${classId}/trilha/${trail.id}/modulo/${firstModule.id}/conteudo/${firstContent.id}`);
+        navigate(`/aluno/content/${firstContent.id}`);
       }
     }
   };
@@ -179,7 +179,7 @@ export const ClassroomPage = () => {
                         }`}
                         onClick={() => {
                           if (!isBlocked) {
-                            navigate(`/aluno/turma/${classId}/trilha/${trail.id}/modulo/${module.id}/conteudo/${content.id}`);
+                            navigate(`/aluno/content/${content.id}`);
                           }
                         }}
                       >
