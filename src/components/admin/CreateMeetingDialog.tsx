@@ -133,7 +133,7 @@ export const CreateMeetingDialog = ({ children }: CreateMeetingDialogProps) => {
     setOpen(false);
     
     // Navigate to meeting room
-    navigate(`/admin/encontro/${meeting.id}`);
+    navigate(`/admin/meeting/${meeting.id}`);
     
     toast({
       title: "Encontro iniciado!",

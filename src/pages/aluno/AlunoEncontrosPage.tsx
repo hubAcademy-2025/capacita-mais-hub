@@ -98,7 +98,7 @@ export const AlunoEncontrosPage = () => {
                     <Button 
                       size="sm"
                       variant={isLive || isToday ? "default" : "outline"}
-                      onClick={() => navigate(`/aluno/encontro/${meeting.id}`)}
+                      onClick={() => navigate(`/aluno/meeting/${meeting.id}`)}
                       className={isLive ? "bg-red-500 hover:bg-red-600" : isToday ? "bg-success hover:bg-success/90" : ""}
                     >
                       {isLive ? 'Entrar AO VIVO' : isToday ? 'Entrar' : 'Detalhes'}
@@ -159,7 +159,7 @@ export const AlunoEncontrosPage = () => {
                     <Button 
                       variant="default" 
                       size="sm"
-                      onClick={() => navigate(`/aluno/encontro/${meeting.id}`)}
+                      onClick={() => navigate(`/aluno/meeting/${meeting.id}`)}
                       className="bg-primary hover:bg-primary/90"
                     >
                       Entrar

@@ -155,7 +155,7 @@ export const ProfessorEncontrosPage = () => {
                     <Button 
                       size="sm"
                       variant={isToday ? "default" : "outline"}
-                      onClick={() => navigate(`/professor/encontro/${meeting.id}`)}
+                      onClick={() => navigate(`/professor/meeting/${meeting.id}`)}
                       className={isToday ? "bg-success hover:bg-success/90" : ""}
                     >
                       {isToday ? 'Iniciar Encontro' : 'Ver Detalhes'}
