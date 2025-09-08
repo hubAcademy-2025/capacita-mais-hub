@@ -17,7 +17,7 @@ export const AuthPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const { toast } = useToast();
-  const { currentUser } = useAppStore();
+  const { currentUser, setCurrentUser, users } = useAppStore();
   const navigate = useNavigate();
 
   // Redirect if already authenticated
@@ -84,9 +84,13 @@ export const AuthPage = () => {
   };
 
   const handleDemoAccess = () => {
+    // Set a demo admin user for demonstration purposes
+    const demoUser = users.find(u => u.role === 'admin') || users[0];
+    setCurrentUser(demoUser);
+    
     toast({
       title: "Acesso demo",
-      description: "Entrando no modo demonstração...",
+      description: `Entrando como ${demoUser.name} (${demoUser.role})`,
     });
     navigate('/');
   };
