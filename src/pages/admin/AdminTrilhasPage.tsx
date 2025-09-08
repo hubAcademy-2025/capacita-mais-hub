@@ -1,12 +1,18 @@
-import { BookOpen, Plus, Users, Clock } from 'lucide-react';
+import { useState } from 'react';
+import { BookOpen, Plus, Users, Clock, Edit } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { StatsCard } from '@/components/ui/stats-card';
 import { useAppStore } from '@/store/useAppStore';
+import { CreateTrailDialog } from '@/components/admin/CreateTrailDialog';
+import { EditTrailDialog } from '@/components/admin/EditTrailDialog';
+import type { Trail } from '@/types';
 
 export const AdminTrilhasPage = () => {
   const { trails, classes } = useAppStore();
+  const [editingTrail, setEditingTrail] = useState<Trail | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const getTrailStats = () => {
     const totalModules = trails.reduce((acc, t) => acc + t.modules.length, 0);
@@ -27,10 +33,7 @@ export const AdminTrilhasPage = () => {
           <h1 className="text-3xl font-bold text-foreground">Gestão de Trilhas</h1>
           <p className="text-muted-foreground">Crie e gerencie trilhas de aprendizado</p>
         </div>
-        <Button onClick={() => alert('Funcionalidade de criar trilha será implementada')}>
-          <Plus className="w-4 h-4 mr-2" />
-          Nova Trilha
-        </Button>
+        <CreateTrailDialog />
       </div>
 
       {/* Stats Grid */}
@@ -119,7 +122,16 @@ export const AdminTrilhasPage = () => {
                       )}
                     </div>
 
-                    <Button variant="outline" size="sm" className="w-full" onClick={() => alert('Funcionalidade de editar trilha será implementada')}>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full" 
+                      onClick={() => {
+                        setEditingTrail(trail);
+                        setEditDialogOpen(true);
+                      }}
+                    >
+                      <Edit className="w-3 h-3 mr-1" />
                       Editar Trilha
                     </Button>
                   </CardContent>
@@ -129,6 +141,13 @@ export const AdminTrilhasPage = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Edit Dialog */}
+      <EditTrailDialog 
+        trail={editingTrail}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+      />
     </div>
   );
 };

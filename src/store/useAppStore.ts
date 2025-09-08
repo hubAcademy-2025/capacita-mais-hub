@@ -38,6 +38,11 @@ interface AppState {
   updateClass: (classId: string, updates: Partial<Class>) => void;
   deleteClass: (classId: string) => void;
   
+  // Trail management
+  addTrail: (trail: Trail) => void;
+  updateTrail: (trail: Trail) => void;
+  deleteTrail: (trailId: string) => void;
+  
   addMeeting: (meeting: Meeting) => void;
   updateMeeting: (meetingId: string, updates: Partial<Meeting>) => void;
   updateEnrollment: (studentId: string, classId: string, updates: Partial<Enrollment>) => void;
@@ -108,6 +113,19 @@ export const useAppStore = create<AppState>((set, get) => ({
   
   deleteClass: (classId) => set((state) => ({
     classes: state.classes.filter(c => c.id !== classId)
+  })),
+  
+  // Trail management
+  addTrail: (trail) => set((state) => ({
+    trails: [...state.trails, trail]
+  })),
+  
+  updateTrail: (trail) => set((state) => ({
+    trails: state.trails.map(t => t.id === trail.id ? trail : t)
+  })),
+  
+  deleteTrail: (trailId) => set((state) => ({
+    trails: state.trails.filter(t => t.id !== trailId)
   })),
   
   addMeeting: (meeting) => set((state) => ({
