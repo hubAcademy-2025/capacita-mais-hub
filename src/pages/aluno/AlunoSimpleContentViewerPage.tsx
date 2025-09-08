@@ -260,9 +260,9 @@ export const AlunoSimpleContentViewerPage = () => {
       <div className="flex min-h-screen w-full bg-background">
         <AppSidebar />
         
-        <main className="flex-1 relative">
+        <main className="flex-1 flex flex-col">
           {/* Fixed Header */}
-          <div className="sticky top-0 z-40 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 border-b">
+          <header className="sticky top-0 z-50 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 border-b">
             <div className="flex items-center justify-between p-4">
               <div>
                 <h1 className="text-2xl font-bold">{content.title}</h1>
@@ -277,11 +277,11 @@ export const AlunoSimpleContentViewerPage = () => {
                 </Badge>
               )}
             </div>
-          </div>
+          </header>
 
-          {/* Content */}
-          <div className="p-4">
-            <Card className="relative z-10 overflow-hidden">
+          {/* Content Area */}
+          <div className="flex-1 p-4 overflow-auto">
+            <Card className="w-full max-w-4xl mx-auto">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   {content.type === 'video' && <Play className="w-5 h-5" />}
@@ -292,9 +292,9 @@ export const AlunoSimpleContentViewerPage = () => {
                   <p className="text-muted-foreground">{content.description}</p>
                 )}
               </CardHeader>
-              <CardContent className="space-y-4 relative z-20">
+              <CardContent className="space-y-4">
                 {(content.type === 'video' || content.type === 'live') && content.url && (
-                  <div className="relative z-10 bg-background rounded-lg overflow-hidden">
+                  <div className="w-full aspect-video bg-black rounded-lg overflow-hidden">
                     <VideoPlayer
                       url={content.url}
                       title={content.title}
