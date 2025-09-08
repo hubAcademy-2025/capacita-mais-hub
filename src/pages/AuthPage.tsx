@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { GraduationCap, Loader2 } from 'lucide-react';
+import { GraduationCap, Loader2, Mail } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAppStore } from '@/store/useAppStore';
@@ -16,12 +16,24 @@ export const AuthPage = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const { currentUser, setCurrentUser, users } = useAppStore();
   const navigate = useNavigate();
 
-  // Redirect if already authenticated
-  if (currentUser) {
+  // Check if this is an invite
+  const isInvite = searchParams.get('invite') === 'true';
+  const inviteEmail = searchParams.get('email') || '';
+  const inviteRole = searchParams.get('role') || '';
+
+  useEffect(() => {
+    if (isInvite && inviteEmail) {
+      setEmail(inviteEmail);
+    }
+  }, [isInvite, inviteEmail]);
+
+  // Redirect if already authenticated and not an invite
+  if (currentUser && !isInvite) {
     console.log('AuthPage: User is already logged in, redirecting to home', currentUser);
     return <Navigate to="/" replace />;
   }
@@ -99,13 +111,29 @@ export const AuthPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-4">
-        {/* Helper message */}
-        <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
-          <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-2">💡 Para testar:</h3>
-          <p className="text-sm text-blue-700 dark:text-blue-300">
-            Crie uma conta com qualquer email (ex: test@example.com) ou use o botão "Demo" abaixo.
-          </p>
-        </div>
+        {/* Invite message */}
+        {isInvite && (
+          <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div className="flex items-center gap-2 mb-2">
+              <Mail className="w-5 h-5 text-blue-600" />
+              <h3 className="font-medium text-blue-900 dark:text-blue-100">Convite Recebido!</h3>
+            </div>
+            <p className="text-sm text-blue-700 dark:text-blue-300">
+              Você foi convidado para participar do Capacita+ como <strong>{inviteRole}</strong>. 
+              Crie sua conta abaixo para começar.
+            </p>
+          </div>
+        )}
+        
+        {/* Helper message for regular users */}
+        {!isInvite && (
+          <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-2">💡 Para testar:</h3>
+            <p className="text-sm text-blue-700 dark:text-blue-300">
+              Crie uma conta com qualquer email (ex: test@example.com) ou use o botão "Demo" abaixo.
+            </p>
+          </div>
+        )}
         
         <Card>
           <CardHeader className="text-center">
@@ -118,10 +146,12 @@ export const AuthPage = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="signin" className="w-full">
+            <Tabs defaultValue={isInvite ? "signup" : "signin"} className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="signin">Entrar</TabsTrigger>
-                <TabsTrigger value="signup">Cadastrar</TabsTrigger>
+                <TabsTrigger value="signup">
+                  {isInvite ? "Criar Conta do Convite" : "Cadastrar"}
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="signin">
@@ -134,6 +164,7 @@ export const AuthPage = () => {
                       placeholder="seu@email.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      disabled={isInvite}
                       required
                     />
                   </div>
@@ -170,6 +201,7 @@ export const AuthPage = () => {
                       placeholder="seu@email.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      disabled={isInvite}
                       required
                     />
                   </div>
@@ -192,7 +224,7 @@ export const AuthPage = () => {
                   )}
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Criar Conta
+                    {isInvite ? "Criar Conta do Convite" : "Criar Conta"}
                   </Button>
                 </form>
               </TabsContent>
@@ -209,13 +241,15 @@ export const AuthPage = () => {
                   </span>
                 </div>
               </div>
-              <Button 
-                variant="outline" 
-                className="w-full mt-4"
-                onClick={handleDemoAccess}
-              >
-                Continuar sem login (Demo)
-              </Button>
+              {!isInvite && (
+                <Button 
+                  variant="outline" 
+                  className="w-full mt-4"
+                  onClick={handleDemoAccess}
+                >
+                  Continuar sem login (Demo)
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
