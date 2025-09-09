@@ -13,6 +13,7 @@ import { AdminRelatoriosPage } from '@/pages/admin/AdminRelatoriosPage';
 import { AdminClassDetailPage } from '@/pages/admin/AdminClassDetailPage';
 import { AdminAttendanceReportsPage } from '@/pages/admin/AdminAttendanceReportsPage';
 import { AdminMeetingRoomPage } from '@/pages/admin/AdminMeetingRoomPage';
+import { AdminMeetingsPage } from '@/pages/admin/AdminMeetingsPage';
 
 import { ProfessorDashboard } from '@/pages/professor/ProfessorDashboard';
 import { ProfessorTurmasPage } from '@/pages/professor/ProfessorTurmasPage';
@@ -101,7 +102,14 @@ const App: React.FC = () => {
               </Layout>
             </ProtectedRoute>
           } />
-          <Route path="/admin/meeting/:meetingId" element={
+          <Route path="/admin/meetings" element={
+            <ProtectedRoute>
+              <Layout>
+                <AdminMeetingsPage />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/meeting-room/:meetingId" element={
             <ProtectedRoute>
               <Layout>
                 <AdminMeetingRoomPage />

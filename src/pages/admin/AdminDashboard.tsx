@@ -29,6 +29,12 @@ export const AdminDashboard = () => {
               Relatórios
             </Link>
           </Button>
+          <Button asChild variant="outline">
+            <Link to="/admin/meetings">
+              <Users className="w-4 h-4 mr-2" />
+              Encontros
+            </Link>
+          </Button>
           <CreateMeetingDialog>
             <Button>
               <Plus className="w-4 h-4 mr-2" />

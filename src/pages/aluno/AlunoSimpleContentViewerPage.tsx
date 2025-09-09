@@ -259,13 +259,15 @@ export const AlunoSimpleContentViewerPage = () => {
 
   // Navigation functions
   const navigateToContent = (direction: 'prev' | 'next') => {
-    const currentIndex = module.content.findIndex(c => c.id === contentId);
+    if (!moduleContents.length) return;
+    
+    const currentIndex = moduleContents.findIndex(c => c.id === contentId);
     if (currentIndex === -1) return;
 
     let targetIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
     
-    if (targetIndex >= 0 && targetIndex < module.content.length) {
-      const targetContent = module.content[targetIndex];
+    if (targetIndex >= 0 && targetIndex < moduleContents.length) {
+      const targetContent = moduleContents[targetIndex];
       navigate(`/aluno/content/${targetContent.id}`);
     } else {
       toast({
@@ -276,8 +278,8 @@ export const AlunoSimpleContentViewerPage = () => {
     }
   };
 
-  const canNavigatePrev = module.content.findIndex(c => c.id === contentId) > 0;
-  const canNavigateNext = module.content.findIndex(c => c.id === contentId) < module.content.length - 1;
+  const canNavigatePrev = moduleContents.length > 0 && moduleContents.findIndex(c => c.id === contentId) > 0;
+  const canNavigateNext = moduleContents.length > 0 && moduleContents.findIndex(c => c.id === contentId) < moduleContents.length - 1;
 
   return (
     <SidebarProvider>
