@@ -291,6 +291,42 @@ export type Database = {
           },
         ]
       }
+      content_access_logs: {
+        Row: {
+          access_type: string
+          accessed_at: string | null
+          content_id: string | null
+          id: string
+          ip_address: unknown | null
+          quiz_id: string | null
+          trail_id: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          access_type: string
+          accessed_at?: string | null
+          content_id?: string | null
+          id?: string
+          ip_address?: unknown | null
+          quiz_id?: string | null
+          trail_id?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          access_type?: string
+          accessed_at?: string | null
+          content_id?: string | null
+          id?: string
+          ip_address?: unknown | null
+          quiz_id?: string | null
+          trail_id?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       enrollments: {
         Row: {
           class_id: string | null
@@ -915,6 +951,15 @@ export type Database = {
       has_role: {
         Args: { role_name: string; user_uuid: string }
         Returns: boolean
+      }
+      log_content_access: {
+        Args: {
+          p_access_type?: string
+          p_content_id?: string
+          p_quiz_id?: string
+          p_trail_id?: string
+        }
+        Returns: undefined
       }
     }
     Enums: {
