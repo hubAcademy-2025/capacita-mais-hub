@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Users, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useClasses } from '@/hooks/useClasses';
 import { useMeetings } from '@/hooks/useMeetings';
 import {
   Dialog,
@@ -35,10 +36,15 @@ export const CreateMeetingDialog = ({ children }: CreateMeetingDialogProps) => {
   const [description, setDescription] = useState('');
   const [participantTypes, setParticipantTypes] = useState<('students' | 'professors')[]>(['students']);
   
-  const { classes, currentUser } = useAppStore();
+  const { classes: storeClasses, currentUser } = useAppStore();
+  const { classes, loading: classesLoading } = useClasses();
   const { createMeeting } = useMeetings();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  console.log('=== CREATE MEETING DEBUG ===');
+  console.log('Classes from useClasses:', classes);
+  console.log('Classes loading:', classesLoading);
 
   const handleClassToggle = (classId: string) => {
     setSelectedClasses(prev => 
@@ -158,21 +164,27 @@ export const CreateMeetingDialog = ({ children }: CreateMeetingDialogProps) => {
           <div>
             <Label>Turmas Selecionadas *</Label>
             <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto border rounded-md p-3 mt-2">
-              {classes.map((classItem) => (
-                <div key={classItem.id} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={classItem.id}
-                    checked={selectedClasses.includes(classItem.id)}
-                    onCheckedChange={() => handleClassToggle(classItem.id)}
-                  />
-                  <Label 
-                    htmlFor={classItem.id} 
-                    className="text-sm font-normal cursor-pointer flex-1"
-                  >
-                    {classItem.name} ({classItem.studentIds.length} alunos)
-                  </Label>
-                </div>
-              ))}
+              {classesLoading ? (
+                <div className="text-sm text-muted-foreground">Carregando turmas...</div>
+              ) : classes.length === 0 ? (
+                <div className="text-sm text-muted-foreground">Nenhuma turma encontrada</div>
+              ) : (
+                classes.map((classItem) => (
+                  <div key={classItem.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={classItem.id}
+                      checked={selectedClasses.includes(classItem.id)}
+                      onCheckedChange={() => handleClassToggle(classItem.id)}
+                    />
+                    <Label 
+                      htmlFor={classItem.id} 
+                      className="text-sm font-normal cursor-pointer flex-1"
+                    >
+                      {classItem.name} ({classItem.student_count} alunos)
+                    </Label>
+                  </div>
+                ))
+              )}
             </div>
             {selectedClasses.length > 0 && (
               <p className="text-sm text-muted-foreground mt-1">
