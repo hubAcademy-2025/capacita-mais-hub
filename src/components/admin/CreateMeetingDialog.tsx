@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Users, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useMeetings } from '@/hooks/useMeetings';
 import {
   Dialog,
   DialogContent,
@@ -34,7 +35,8 @@ export const CreateMeetingDialog = ({ children }: CreateMeetingDialogProps) => {
   const [description, setDescription] = useState('');
   const [participantTypes, setParticipantTypes] = useState<('students' | 'professors')[]>(['students']);
   
-  const { classes, addMeeting, currentUser } = useAppStore();
+  const { classes, currentUser } = useAppStore();
+  const { createMeeting } = useMeetings();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -54,7 +56,7 @@ export const CreateMeetingDialog = ({ children }: CreateMeetingDialogProps) => {
     );
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!title.trim() || selectedClasses.length === 0 || !dateTime || participantTypes.length === 0) {
@@ -66,44 +68,33 @@ export const CreateMeetingDialog = ({ children }: CreateMeetingDialogProps) => {
       return;
     }
 
-    // Create meetings for each selected class
-    const createdMeetings: Meeting[] = [];
-    selectedClasses.forEach(classId => {
-      const meeting: Meeting = {
-        id: Math.random().toString(36).substr(2, 9),
-        title,
-        classId,
-        dateTime,
-        duration: parseInt(duration),
-        description,
-        status: 'scheduled',
-        meetingUrl: `https://meet.jit.si/capacita-${Math.random().toString(36).substr(2, 8)}`,
-        attendanceList: [],
-        maxParticipants: 50,
-        hostUserId: currentUser?.id || 'admin-001',
-        participantTypes
-      };
-      
-      addMeeting(meeting);
-      createdMeetings.push(meeting);
-    });
+    try {
+      // Create meetings for each selected class
+      for (const classId of selectedClasses) {
+        await createMeeting({
+          title,
+          class_id: classId,
+          date_time: dateTime,
+          duration: parseInt(duration),
+          description,
+          max_participants: 50
+        });
+      }
 
-    toast({
-      title: "Encontros criados!",
-      description: `${selectedClasses.length} encontro(s) agendado(s) com sucesso.`,
-    });
-
-    // Reset form
-    setTitle('');
-    setSelectedClasses([]);
-    setDateTime('');
-    setDuration('60');
-    setDescription('');
-    setParticipantTypes(['students']);
-    setOpen(false);
+      // Reset form
+      setTitle('');
+      setSelectedClasses([]);
+      setDateTime('');
+      setDuration('60');
+      setDescription('');
+      setParticipantTypes(['students']);
+      setOpen(false);
+    } catch (error) {
+      // Error toast is handled by the hook
+    }
   };
 
-  const handleCreateAndStart = () => {
+  const handleCreateAndStart = async () => {
     if (!title.trim() || selectedClasses.length === 0 || !dateTime || participantTypes.length === 0) {
       toast({
         title: "Erro",
@@ -113,32 +104,31 @@ export const CreateMeetingDialog = ({ children }: CreateMeetingDialogProps) => {
       return;
     }
 
-    // Create the meeting first
-    const meeting: Meeting = {
-      id: Math.random().toString(36).substr(2, 9),
-      title,
-      classId: selectedClasses[0], // For now, start with first selected class
-      dateTime,
-      duration: parseInt(duration),
-      description,
-      status: 'live',
-      meetingUrl: `https://meet.jit.si/capacita-${Math.random().toString(36).substr(2, 8)}`,
-      attendanceList: [],
-      maxParticipants: 50,
-      hostUserId: currentUser?.id || 'admin-001',
-      participantTypes
-    };
-    
-    addMeeting(meeting);
-    setOpen(false);
-    
-    // Navigate to meeting room
-    navigate(`/admin/meeting/${meeting.id}`);
-    
-    toast({
-      title: "Encontro iniciado!",
-      description: "Você está sendo redirecionado para a sala de reunião.",
-    });
+    try {
+      // Create the meeting for the first selected class
+      const meetingData = {
+        title,
+        class_id: selectedClasses[0],
+        date_time: dateTime,
+        duration: parseInt(duration),
+        description,
+        max_participants: 50
+      };
+
+      await createMeeting(meetingData);
+      
+      setOpen(false);
+      
+      toast({
+        title: "Encontro iniciado!",
+        description: "Você está sendo redirecionado para a sala de reunião.",
+      });
+
+      // Navigate to meetings page since we don't have the meeting ID yet
+      navigate('/admin/meetings');
+    } catch (error) {
+      // Error toast is handled by the hook
+    }
   };
 
   return (
