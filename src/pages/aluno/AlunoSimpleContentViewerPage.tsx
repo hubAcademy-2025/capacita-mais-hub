@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { VideoPlayer } from '@/components/ui/video-player';
 import { QuizPlayer } from '@/components/ui/quiz-player';
-
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useEnrollments } from '@/hooks/useEnrollments';
 import { supabase } from '@/integrations/supabase/client';
@@ -150,7 +149,6 @@ export const AlunoSimpleContentViewerPage = () => {
     }
   };
 
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -220,10 +218,10 @@ export const AlunoSimpleContentViewerPage = () => {
   const canNavigateNext = moduleContents.length > 0 && moduleContents.findIndex(c => c.id === contentId) < moduleContents.length - 1;
 
   return (
-    <div className="min-h-screen w-full bg-background">
-      <div className="flex w-full">
+    <div className="h-screen w-full bg-background overflow-hidden">
+      <div className="flex h-full w-full">
         {/* In-page module navigation (secondary sidebar) */}
-        <aside className="hidden md:block w-72 shrink-0 border-r bg-card">
+        <aside className="hidden md:block w-72 shrink-0 border-r bg-card h-full overflow-y-auto">
           <div className="p-4 border-b">
             <Button
               variant="ghost"
@@ -269,77 +267,79 @@ export const AlunoSimpleContentViewerPage = () => {
         </aside>
 
         {/* Main content */}
-        <main className="flex-1 min-w-0 p-4">
-          {/* Page header inside content (no fixed positioning) */}
-          <div className="flex items-center justify-between mb-4">
-            <div className="min-w-0">
-              <h1 className="text-2xl font-bold truncate">{content.title}</h1>
-              <p className="text-muted-foreground truncate">{trail.title} • {module.title}</p>
+        <main className="flex-1 min-w-0 h-full overflow-y-auto">
+          <div className="p-4">
+            {/* Page header inside content (no fixed positioning) */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="min-w-0">
+                <h1 className="text-2xl font-bold truncate">{content.title}</h1>
+                <p className="text-muted-foreground truncate">{trail.title} • {module.title}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigateToContent('prev')}
+                  disabled={!canNavigatePrev}
+                  className="flex items-center gap-1"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Anterior
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigateToContent('next')}
+                  disabled={!canNavigateNext}
+                  className="flex items-center gap-1"
+                >
+                  Próximo
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+                {isCompleted && (
+                  <Badge variant="default" className="bg-green-500 ml-2">
+                    <CheckCircle className="w-3 h-3 mr-1" />
+                    Concluído
+                  </Badge>
+                )}
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigateToContent('prev')}
-                disabled={!canNavigatePrev}
-                className="flex items-center gap-1"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Anterior
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigateToContent('next')}
-                disabled={!canNavigateNext}
-                className="flex items-center gap-1"
-              >
-                Próximo
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-              {isCompleted && (
-                <Badge variant="default" className="bg-green-500 ml-2">
-                  <CheckCircle className="w-3 h-3 mr-1" />
-                  Concluído
-                </Badge>
-              )}
-            </div>
+
+            <Card className="w-full max-w-4xl mx-auto">
+              <CardContent className="p-6 space-y-4">
+                {(content.type === 'video' || content.type === 'live') && content.url && (
+                  <div className="w-full aspect-video bg-black rounded-lg overflow-hidden">
+                    <VideoPlayer url={content.url} title={content.title} />
+                  </div>
+                )}
+
+                {content.type === 'quiz' && content.quiz && (
+                  <QuizPlayer
+                    quiz={content.quiz}
+                    onComplete={(score, answers) => {
+                      console.log('Quiz completed:', { score, answers });
+                      markAsCompleted();
+                    }}
+                    onMarkCompleted={markAsCompleted}
+                  />
+                )}
+
+                {content.type === 'pdf' && content.description && (
+                  <div className="prose max-w-none">
+                    <div className="whitespace-pre-wrap">{content.description}</div>
+                    {!isCompleted && (
+                      <div className="mt-6">
+                        <Button onClick={markAsCompleted}>
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Marcar como Concluído
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
-
-          <Card className="w-full max-w-4xl mx-auto">
-            <CardContent className="p-6 space-y-4">
-              {(content.type === 'video' || content.type === 'live') && content.url && (
-                <div className="w-full aspect-video bg-black rounded-lg overflow-hidden">
-                  <VideoPlayer url={content.url} title={content.title} />
-                </div>
-              )}
-
-              {content.type === 'quiz' && content.quiz && (
-                <QuizPlayer
-                  quiz={content.quiz}
-                  onComplete={(score, answers) => {
-                    console.log('Quiz completed:', { score, answers });
-                    markAsCompleted();
-                  }}
-                  onMarkCompleted={markAsCompleted}
-                />
-              )}
-
-              {content.type === 'pdf' && content.description && (
-                <div className="prose max-w-none">
-                  <div className="whitespace-pre-wrap">{content.description}</div>
-                  {!isCompleted && (
-                    <div className="mt-6">
-                      <Button onClick={markAsCompleted}>
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                        Marcar como Concluído
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
         </main>
       </div>
     </div>

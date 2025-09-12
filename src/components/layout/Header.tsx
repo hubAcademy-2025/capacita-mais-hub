@@ -20,7 +20,7 @@ interface HeaderProps {
 }
 
 export const Header = ({ title }: HeaderProps) => {
-  const { currentUser, currentRole, notifications } = useAppStore();
+  const { currentUser, currentRole, notifications, sidebarCollapsed } = useAppStore();
   const { signOut } = useAuth();
   const { userProfile, switchRole } = useSupabaseAuth();
   const [showNotifications, setShowNotifications] = useState(false);
@@ -53,7 +53,9 @@ export const Header = ({ title }: HeaderProps) => {
   };
 
   return (
-    <header className="bg-card border-b border-border px-6 py-4 relative z-10 ml-64">
+    <header className={`bg-card border-b border-border px-6 py-4 relative z-10 transition-all duration-300 ${
+      sidebarCollapsed ? 'ml-16' : 'ml-64'
+    }`}>
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{title}</h1>
