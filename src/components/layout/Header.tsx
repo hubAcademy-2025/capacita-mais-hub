@@ -59,9 +59,9 @@ export const Header = ({ title }: HeaderProps) => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{title}</h1>
-          <p className="text-sm text-muted-foreground">
+          {/* <p className="text-sm text-muted-foreground">
             Bem-vindo, {currentUser?.name}
-          </p>
+          </p> */}
         </div>
 
         <div className="flex items-center gap-4">
