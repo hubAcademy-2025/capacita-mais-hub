@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { VideoPlayer } from '@/components/ui/video-player';
 import { QuizPlayer } from '@/components/ui/quiz-player';
-import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useEnrollments } from '@/hooks/useEnrollments';
 import { supabase } from '@/integrations/supabase/client';
@@ -150,68 +150,6 @@ export const AlunoSimpleContentViewerPage = () => {
     }
   };
 
-  const AppSidebar = () => (
-    <Sidebar className="w-80 border-r bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
-      <div className="sticky top-0 z-10 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
-        <SidebarTrigger className="m-4" />
-      </div>
-      <SidebarContent>
-        <div className="p-4 border-b bg-card">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/aluno/trilhas')}
-            className="mb-2 w-full justify-start"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Voltar às Trilhas
-          </Button>
-          <h2 className="font-semibold text-lg">{trail?.title}</h2>
-          <p className="text-sm text-muted-foreground">{trail?.description}</p>
-        </div>
-
-        {allModules.map((mod) => (
-          <SidebarGroup key={mod.id}>
-            <SidebarGroupLabel className="flex items-center justify-between">
-              <span className="flex items-center gap-2">
-                <BookOpen className="w-4 h-4" />
-                {mod.title}
-              </span>
-              <ChevronRight className="w-4 h-4" />
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {mod.id === module?.id && moduleContents.map((contentItem) => {
-                  const Icon = getContentIcon(contentItem.type);
-                  const isActive = contentItem.id === contentId;
-                  
-                  return (
-                    <SidebarMenuItem key={contentItem.id}>
-                      <SidebarMenuButton 
-                        asChild
-                        className={`${isActive ? "bg-primary/10 text-primary font-medium border-r-2 border-primary" : "hover:bg-muted/50"} relative z-10`}
-                      >
-                        <button
-                          onClick={() => navigate(`/aluno/content/${contentItem.id}`)}
-                          className="w-full flex items-center gap-2 text-left p-2 rounded"
-                        >
-                          <Icon className="w-4 h-4" />
-                          <span className="truncate">{contentItem.title}</span>
-                          {userProgress?.completed && (
-                            <CheckCircle className="w-3 h-3 text-green-500 ml-auto" />
-                          )}
-                        </button>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
-      </SidebarContent>
-    </Sidebar>
-  );
 
   if (loading) {
     return (
@@ -282,97 +220,128 @@ export const AlunoSimpleContentViewerPage = () => {
   const canNavigateNext = moduleContents.length > 0 && moduleContents.findIndex(c => c.id === contentId) < moduleContents.length - 1;
 
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-background">
-        <AppSidebar />
-        
-        <main className="flex-1 flex flex-col min-h-0">
-          {/* Fixed Header */}
-          <header className="shrink-0 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 border-b">
-            <div className="flex items-center justify-between p-4">
-              <div className="flex-1">
-                <h1 className="text-2xl font-bold">{content.title}</h1>
-                <p className="text-muted-foreground">
-                  {trail.title} • {module.title}
-                </p>
-              </div>
-              
-              {/* Navigation Controls */}
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigateToContent('prev')}
-                  disabled={!canNavigatePrev}
-                  className="flex items-center gap-1"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  Anterior
-                </Button>
-                
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigateToContent('next')}
-                  disabled={!canNavigateNext}
-                  className="flex items-center gap-1"
-                >
-                  Próximo
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
-                
-                {isCompleted && (
-                  <Badge variant="default" className="bg-green-500 ml-2">
-                    <CheckCircle className="w-3 h-3 mr-1" />
-                    Concluído
-                  </Badge>
-                )}
-              </div>
-            </div>
-          </header>
-
-          {/* Content Area */}
-          <div className="flex-1 p-4 overflow-auto min-h-0">
-            <Card className="w-full max-w-4xl mx-auto">
-              <CardContent className="p-6 space-y-4">
-                {(content.type === 'video' || content.type === 'live') && content.url && (
-                  <div className="w-full aspect-video bg-black rounded-lg overflow-hidden">
-                    <VideoPlayer
-                      url={content.url}
-                      title={content.title}
-                    />
-                  </div>
-                )}
-
-                {content.type === 'quiz' && content.quiz && (
-                  <QuizPlayer
-                    quiz={content.quiz}
-                    onComplete={(score, answers) => {
-                      console.log('Quiz completed:', { score, answers });
-                      markAsCompleted();
-                    }}
-                    onMarkCompleted={markAsCompleted}
-                  />
-                )}
-
-                {content.type === 'pdf' && content.description && (
-                  <div className="prose max-w-none">
-                    <div className="whitespace-pre-wrap">{content.description}</div>
-                    {!isCompleted && (
-                      <div className="mt-6">
-                        <Button onClick={markAsCompleted}>
-                          <CheckCircle className="w-4 h-4 mr-2" />
-                          Marcar como Concluído
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+    <div className="min-h-screen w-full bg-background">
+      <div className="flex w-full">
+        {/* In-page module navigation (secondary sidebar) */}
+        <aside className="hidden md:block w-72 shrink-0 border-r bg-card">
+          <div className="p-4 border-b">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/aluno/trilhas')}
+              className="w-full justify-start"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Voltar às Trilhas
+            </Button>
+            <h2 className="font-semibold text-lg mt-2">{trail.title}</h2>
+            <p className="text-sm text-muted-foreground">{trail.description}</p>
           </div>
+
+          <div className="p-3">
+            {allModules.map((mod) => (
+              <div key={mod.id} className="mb-3">
+                <div className="px-2 py-2 text-sm font-medium flex items-center gap-2">
+                  <BookOpen className="w-4 h-4" />
+                  <span className="truncate">{mod.title}</span>
+                </div>
+                {mod.id === module?.id && (
+                  <div className="space-y-1">
+                    {moduleContents.map((contentItem) => {
+                      const Icon = getContentIcon(contentItem.type);
+                      const isActive = contentItem.id === contentId;
+                      return (
+                        <button
+                          key={contentItem.id}
+                          onClick={() => navigate(`/aluno/content/${contentItem.id}`)}
+                          className={`w-full flex items-center gap-2 text-left p-2 rounded ${isActive ? 'bg-primary/10 text-primary font-medium' : 'hover:bg-muted/50'}`}
+                        >
+                          <Icon className="w-4 h-4" />
+                          <span className="truncate">{contentItem.title}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </aside>
+
+        {/* Main content */}
+        <main className="flex-1 min-w-0 p-4">
+          {/* Page header inside content (no fixed positioning) */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="min-w-0">
+              <h1 className="text-2xl font-bold truncate">{content.title}</h1>
+              <p className="text-muted-foreground truncate">{trail.title} • {module.title}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigateToContent('prev')}
+                disabled={!canNavigatePrev}
+                className="flex items-center gap-1"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Anterior
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigateToContent('next')}
+                disabled={!canNavigateNext}
+                className="flex items-center gap-1"
+              >
+                Próximo
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+              {isCompleted && (
+                <Badge variant="default" className="bg-green-500 ml-2">
+                  <CheckCircle className="w-3 h-3 mr-1" />
+                  Concluído
+                </Badge>
+              )}
+            </div>
+          </div>
+
+          <Card className="w-full max-w-4xl mx-auto">
+            <CardContent className="p-6 space-y-4">
+              {(content.type === 'video' || content.type === 'live') && content.url && (
+                <div className="w-full aspect-video bg-black rounded-lg overflow-hidden">
+                  <VideoPlayer url={content.url} title={content.title} />
+                </div>
+              )}
+
+              {content.type === 'quiz' && content.quiz && (
+                <QuizPlayer
+                  quiz={content.quiz}
+                  onComplete={(score, answers) => {
+                    console.log('Quiz completed:', { score, answers });
+                    markAsCompleted();
+                  }}
+                  onMarkCompleted={markAsCompleted}
+                />
+              )}
+
+              {content.type === 'pdf' && content.description && (
+                <div className="prose max-w-none">
+                  <div className="whitespace-pre-wrap">{content.description}</div>
+                  {!isCompleted && (
+                    <div className="mt-6">
+                      <Button onClick={markAsCompleted}>
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                        Marcar como Concluído
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </main>
       </div>
-    </SidebarProvider>
+    </div>
   );
 };
